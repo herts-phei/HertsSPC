@@ -1,0 +1,41 @@
+Package: HertsSPC
+Title: SPC Outputs
+Type: Package
+Version: 0.1.0
+Author: Authors@R: c(
+          person(given = "Ben", family = "Kimpton", role = "cre", email = "ben.kimpton@hertfordshire.gov.uk")
+          )
+Imports: 
+    cowplot,
+    echarts4r,
+    flextable,
+    htmltools,
+    htmlwidgets,
+    lubridate,
+    magick,
+    officer,
+    reactable,
+    scales,
+    tippy,
+    zoo,
+    magrittr,
+    dplyr,
+    plotly,
+    rlang,
+    ggplot2
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: A package providing various forms of output desired when applying SPC logic to metrics and indicators, including charts, summary tables and narratives.
+Encoding: UTF-8
+License: MIT + file LICENSE
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Suggests: 
+    testthat (>= 3.0.0),
+    stringr,
+    tidyr,
+    data.table,
+    ggrepel,
+    knitr,
+    base64enc,
+    stats
+Config/testthat/edition: 3
