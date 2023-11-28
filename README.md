@@ -38,11 +38,58 @@ For more examples, please see vignettes:
 
 Everything can be produced through the spc_output() function alone. However, if you are producing multiple plots, spc_output() needs to be run first to produce the processed dataframe with multiple indicators. The charts can be then produced in a loop using spc_chart(). To note, facetting graphs is not possible within the charting functionality.
 
-As an example (NOT REPRODUCIBLE):
+As an example:
 
 ```         
-spc_data <- HertsSPC::spc_output(data = data_to_process,
-                                 output = "data")
+
+  library(dplyr)
+
+  tooth_data <- force(ToothGrowth) %>%
+    filter(supp == "VC") %>% slice(-15:-27) %>%
+    mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
+           supp = "Indicator 1",
+           polarity = "up",
+           greater_than_hundred = FALSE,
+           less_than_zero = FALSE,
+           unit = "count")
+
+  tooth_data2 <- force(ToothGrowth) %>%
+    filter(supp == "VC") %>% slice(-15:-27) %>%
+    mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
+           supp = "Indicator 2",
+           polarity = "up",
+           greater_than_hundred = FALSE,
+           less_than_zero = FALSE,
+           unit = "count") %>%
+    bind_rows(tooth_data)
+
+spc_data <- HertsSPC::spc_output(data = tooth_data2, 
+                                time_field = "Date",
+                                indicator = "supp",
+                                value = "len",
+                                output = "data")
                      
-HertsSPC::spc_chart(.data = filter(spc_data, indicator == "x"))
+graph_list <- list()
+
+for(i in unique(spc_data$indicator)){
+
+# If you are running a ggplot with icons, the chunk of ggplot processing needs to be wrapped in () before the pipe, see below. If using plotly or echarts, you do not need to wrap
+
+ graph <- ( HertsSPC::spc_chart(.data = filter(spc_data, indicator == i),
+                              .plot_title = i,
+                              .base_date_range = NULL, 
+                              .package = "ggplot") + 
+                              labs(title = "abc") +
+        ggplot2::theme(axis.line = ggplot2::element_line(color = 'white')) ) %>%
+        spc_add_icons()
+        
+                              
+ graph_list[[paste(i)]] <- graph
+
+}
+
+graph_list[1]
+
+graph_list[2]
+                   
 ```

@@ -35,7 +35,7 @@ utils::globalVariables(c(".","Target", "value", "time_field", "indicator",
 #' @param output "data", "chart", "summary", "narrative" or "status"
 #' @param line_breaks Defaults to F. Determines whether lines will have breaks between rebasing (LCL, UCL and Mean)
 #' @param mode "interactive" or "static", depending on output desired. Applied to narratives and summaries
-#' @param package In respect to interactive charts output, "ggplot2", "echarts" or "plotly"
+#' @param package In respect to interactive charts output, "ggplot2", "echarts"/"echarts4r" or "plotly"
 #' @param plot_title Provides the plot with a title if the output is chart
 #' @param yrange Provides a axis range if the output is chart. Argument should be c(min,max). A count of 5 is +/- from values
 #' @param chart_theme Theme for chart. Uses spc_chart_options function (see ?HccSPC::spc_chart_options()).
@@ -203,9 +203,9 @@ spc_output <- function(data,
   if(output == "chart"){
 
     if(is.null(package)){
-      warning("You have requested a chart but you have not specified a package. Defaults to a static ggplot. Set package as either 'ggplot' for static or 'plotly' or 'echarts' for an interactive chart!")
+      warning("You have requested a chart but you have not specified a package. Defaults to a static ggplot. Set package as either 'ggplot' for static or 'plotly' or 'echarts'/'echarts4r' for an interactive chart!")
       package = "ggplot"
-    } else if(!(package %in% c("ggplot", "plotly", "echarts"))){
+    } else if(!(package %in% c("ggplot", "plotly", "echarts", "echarts4r"))){
       warning("Assigned package is not within options available. Please specify 'ggplot', 'plotly' or 'echarts'. Package will default to ggplot.")
       package = "ggplot"
     }
@@ -253,7 +253,7 @@ spc_output <- function(data,
   # Error catching ----------------------------------------------------------
 
 
-  if(any(is.na(data[[value]]))){ # AY: col name
+  if(any(is.na(data[[value]]))){ # 
     stop("Value column has NA's values so SPC will break. Look at data. If you are aware of NA's that are due to no denominator for a given month or an unknown count,
          filter out before proceeding with SPC (if there are many NA's, consider whether SPC is appropriate)")
   }
@@ -278,6 +278,10 @@ if(is.null(indicator)){
       dplyr::mutate(indicator = !!dplyr::ensym(indicator))
 
   }
+  
+if(is.null(value)){
+  stop("`value` arguement is empty. Assign column of values into order for SPC to run.")
+}
 
 
 

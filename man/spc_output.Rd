@@ -50,7 +50,7 @@ Reflects periods of rebasing. Can be rebased multiple times. Processing function
 
 \item{output}{"data", "chart", "summary", "narrative" or "status"}
 
-\item{package}{In respect to interactive charts output, "ggplot2", "echarts" or "plotly"}
+\item{package}{In respect to interactive charts output, "ggplot2", "echarts"/"echarts4r" or "plotly"}
 
 \item{plot_title}{Provides the plot with a title if the output is chart}
 

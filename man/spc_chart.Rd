@@ -6,7 +6,7 @@
 \usage{
 spc_chart(
   .data,
-  .base_date_range,
+  .base_date_range = NULL,
   .package = NULL,
   .plot_title = NULL,
   .yrange = NULL,

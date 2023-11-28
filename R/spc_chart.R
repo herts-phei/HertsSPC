@@ -149,7 +149,7 @@ spc_chart_options <- function(x_title_size = NULL,
 
 
 spc_chart <- function(.data,
-                      .base_date_range,
+                      .base_date_range = NULL,
                       .package = NULL,
                       .plot_title = NULL,
                       .yrange = NULL,
@@ -165,9 +165,9 @@ spc_chart <- function(.data,
 
 
   if(is.null(package)){
-    warning("You have requested a chart but you have not specified a package. Defaults to a static ggplot. Set package as either 'ggplot' for static or 'plotly' or 'echarts' for an interactive chart!")
+    warning("You have requested a chart but you have not specified a package. Defaults to a static ggplot. Set package as either 'ggplot' for static or 'plotly' or 'echarts'/'echarts4r' for an interactive chart!")
     package = "ggplot"
-  } else if(!(package %in% c("ggplot", "plotly", "echarts"))){
+  } else if(!(package %in% c("ggplot", "plotly", "echarts", "echarts4r"))){
     warning("Assigned package is not within options available. Please specify 'ggplot', 'plotly' or 'echarts'. Package will default to ggplot.")
     package = "ggplot"
   }
