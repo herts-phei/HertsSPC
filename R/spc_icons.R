@@ -245,11 +245,13 @@ spc_add_icons <- function(.spc,
         )
       ))
 
-  } else if(any(graph_type %in% c("echarts4r"))){
+  } else if(any(graph_type %in% c("echarts4r", "echarts"))){
 
     image <- system.file(paste0("icons/", icon_variation), package = "HertsSPC")
     encoded <- base64enc::base64encode(image)
     uri <- paste0("data:image/png;base64,", encoded)
+    
+    browser()
     
     spc <- .spc %>%
       echarts4r::e_image_g(
