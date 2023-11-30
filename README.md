@@ -83,6 +83,13 @@ for(i in unique(spc_data$indicator)){
         ggplot2::theme(axis.line = ggplot2::element_line(color = 'white')) ) %>%
         spc_add_icons()
         
+        
+ # graph <- HertsSPC::spc_chart(.data = filter(spc_data, indicator == i),
+ #                              .plot_title = i,
+ #                              .base_date_range = NULL, 
+ #                              .package = "echarts4r") %>% 
+ #        spc_add_icons()
+ #        
                               
  graph_list[[paste(i)]] <- graph
 

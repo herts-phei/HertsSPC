@@ -225,6 +225,8 @@ spc_add_icons <- function(.spc,
 
   }
 
+  
+ # browser()
 
 
   if(any(graph_type %in% "plotly")){

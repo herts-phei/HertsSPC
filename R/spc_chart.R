@@ -347,7 +347,7 @@ spc_chart <- function(.data,
 
   }
 
-  if(package == "echarts"){
+  if(package %in% c("echarts", "echarts4r")){
 
 
     spc <- pre_plot %>%
