@@ -168,7 +168,7 @@ spc_chart <- function(.data,
     warning("You have requested a chart but you have not specified a package. Defaults to a static ggplot. Set package as either 'ggplot' for static or 'plotly' or 'echarts'/'echarts4r' for an interactive chart!")
     package = "ggplot"
   } else if(!(package %in% c("ggplot", "plotly", "echarts", "echarts4r"))){
-    warning("Assigned package is not within options available. Please specify 'ggplot', 'plotly' or 'echarts'. Package will default to ggplot.")
+    warning("Assigned package is not within options available. Please specify 'ggplot', 'plotly' or 'echarts'/'echarts4r'. Package will default to ggplot.")
     package = "ggplot"
   }
 
@@ -347,7 +347,7 @@ spc_chart <- function(.data,
 
   }
 
-  if(package %in% c("echarts", "echarts4r")){
+  if(package == "echarts" | package == "echarts4r"){
 
 
     spc <- pre_plot %>%

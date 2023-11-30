@@ -253,7 +253,7 @@ spc_add_icons <- function(.spc,
     encoded <- base64enc::base64encode(image)
     uri <- paste0("data:image/png;base64,", encoded)
     
-    browser()
+   # browser()
     
     spc <- .spc %>%
       echarts4r::e_image_g(
