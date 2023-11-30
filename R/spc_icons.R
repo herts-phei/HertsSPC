@@ -156,7 +156,7 @@ spc_add_icons <- function(.spc,
 
   graph_type <- class(.spc)
 
-  if (inherits(.spc, c('echarts4r'))) {
+  if (inherits(.spc, c('echarts4r', 'echarts'))) {
 
     icons <- .spc[["x"]][["data"]]
 
