@@ -84,11 +84,11 @@ for(i in unique(spc_data$indicator)){
         spc_add_icons()
         
         
- # graph <- HertsSPC::spc_chart(.data = filter(spc_data, indicator == i),
- #                              .plot_title = i,
- #                              .base_date_range = NULL, 
- #                              .package = "echarts4r") %>% 
- #        spc_add_icons()
+ graph <- HertsSPC::spc_chart(.data = filter(spc_data, indicator == i),
+                              .plot_title = i,
+                              .base_date_range = NULL,
+                              .package = "echarts4r") %>%
+        spc_add_icons()
  #        
                               
  graph_list[[paste(i)]] <- graph

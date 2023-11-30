@@ -83,7 +83,7 @@ spc_chart_options <- function(x_title_size = NULL,
 #' @description The function used to output data as an SPC chart. Can be ran independently from spc_output()
 #' @param .data Data cleaned and processed within spc_output(), or data returned from spc_ouput(output = "chart").
 #' @param .base_date_range Base date range entered into spc_output(base_date_range) or can be entered into spc_chart() the same way
-#' @param .package Package as entered into spc_output(package) or can be entered into spc_chart() the same way ("echarts" or "plotly", only applies if mode = "interactive")
+#' @param .package Package as entered into spc_output(package) or can be entered into spc_chart() the same way ("echarts"/"echarts4r", "plotly" or "ggplot")
 #' @param .plot_title Provides the plot with a title if the output is chart
 #' @param .yrange Provides a axis range if the output is chart. Argument should be c(min,max). A count of 5 is +/- from values
 #' @param .chart_theme Takes a list of arguements that would appear in theme arguement of
@@ -346,6 +346,8 @@ spc_chart <- function(.data,
     x_label_format <- chart_theme$`x_label_format`
 
   }
+  
+  #browser()
 
   if(package == "echarts" | package == "echarts4r"){
 

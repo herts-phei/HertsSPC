@@ -19,7 +19,7 @@ spc_chart(
 
 \item{.base_date_range}{Base date range entered into spc_output(base_date_range) or can be entered into spc_chart() the same way}
 
-\item{.package}{Package as entered into spc_output(package) or can be entered into spc_chart() the same way ("echarts" or "plotly", only applies if mode = "interactive")}
+\item{.package}{Package as entered into spc_output(package) or can be entered into spc_chart() the same way ("echarts"/"echarts4r", "plotly" or "ggplot")}
 
 \item{.plot_title}{Provides the plot with a title if the output is chart}
 
