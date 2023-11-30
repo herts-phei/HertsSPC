@@ -247,6 +247,10 @@ spc_add_icons <- function(.spc,
 
   } else if(any(graph_type %in% c("echarts4r"))){
 
+    image <- system.file(paste0("icons/", icon_variation), package = "HertsSPC")
+    encoded <- base64enc::base64encode(image)
+    uri <- paste0("data:image/png;base64,", encoded)
+    
     spc <- .spc %>%
       echarts4r::e_image_g(
         elements = list(
@@ -255,7 +259,7 @@ spc_add_icons <- function(.spc,
                top = echarts_variation[2],
                z = echarts_variation[3],
                style = list(
-                 image = system.file(paste0("icons/", icon_variation), package = "HertsSPC"),
+                 image = uri,
                  width = echarts_variation[4],
                  height = echarts_variation[5],
                  opacity = 1
@@ -264,6 +268,11 @@ spc_add_icons <- function(.spc,
 
 
       if(icon_assurance != "white_space.png"){
+        
+        image <- system.file(paste0("icons/", icon_variation), package = "HertsSPC")
+        encoded <- base64enc::base64encode(image)
+        uri <- paste0("data:image/png;base64,", encoded)
+        
         spc <- spc %>%
           echarts4r::e_image_g(
             elements = list(
@@ -272,7 +281,7 @@ spc_add_icons <- function(.spc,
                top = echarts_assurance[2],
                z = echarts_assurance[3],
                style = list(
-                 image = system.file(paste0("icons/", icon_assurance), package = "HertsSPC"),
+                 image = uri,
                  width = echarts_assurance[4],
                  height = echarts_assurance[5],
                  opacity = 1
