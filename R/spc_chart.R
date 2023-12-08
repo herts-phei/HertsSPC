@@ -163,7 +163,7 @@ spc_chart <- function(.data,
   package <- .package
   line_breaks <- .line_breaks
 
-
+  
   if(is.null(package)){
     warning("You have requested a chart but you have not specified a package. Defaults to a static ggplot. Set package as either 'ggplot' for static or 'plotly' or 'echarts'/'echarts4r' for an interactive chart!")
     package = "ggplot"
@@ -311,9 +311,12 @@ spc_chart <- function(.data,
 
   }
 
+  
+  lt0 <- unique(pre_plot$less_than_zero)
+  gt100 <- unique(pre_plot$greater_than_hundred)
 
-  ymin <- if(ymin - 5 < 0  & as.character(unique(pre_plot$less_than_zero)) == "FALSE") 0 else round(ymin-5, 0)
-  ymax <- if(ymax + 5 > 100 & as.character(unique(pre_plot$greater_than_hundred))== "FALSE") 100 else round(ymax+5, 0)
+  ymin <- if(ymin - 5 < 0  & lt0 == FALSE) 0 else round(ymin-5, 0)
+  ymax <- if(ymax + 5 > 100 & gt100 == FALSE) 100 else round(ymax+5, 0)
 
 
   if(is.null(chart_theme$`y_label`)) {
