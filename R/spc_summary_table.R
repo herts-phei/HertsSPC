@@ -81,7 +81,7 @@ spc_summary_table <- function(.data,
 
 
 
-  if(.nad == T & ("Numerator" %in% colnames(data)  == T | "Denominator" %in% colnames(data)== T)){
+  if(.nad == T & ("Numerator" %in% colnames(data)  == F | "Denominator" %in% colnames(data)== F)){
     stop(".nad is set to true however Numerator and/or Denominator columns to not exist in the original data input. Set .nad to FALSE.")
   }
 
