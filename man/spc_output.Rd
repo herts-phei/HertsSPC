@@ -64,7 +64,7 @@ Reflects periods of rebasing. Can be rebased multiple times. Processing function
 
 \item{nad}{Numerator and denominator. Set to TRUE if you have a Numerator and Denominator column and want to present them figures in the table}
 
-\item{time_unit}{Defaults to "month". Can set as "day", "month", "quarter" or "week". Only relevant when using summary or narrative outputs. If using chart, and want to edit x-axis, see spc_chart_theme(x_label_format = NULL)}
+\item{time_unit}{Defaults to "month". Can set as "day", "month", "quarter" or "week". Only relevant when using summary and narrative outputs. Chart only impacted if "quarter" is selected.}
 }
 \description{
 A general function used to return a desired statistical process output without needing to call individual output functions.

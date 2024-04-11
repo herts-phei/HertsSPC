@@ -7,7 +7,7 @@ utils::globalVariables(c(".","time_field", "value", "Mean", "Upper CI", "Lower C
                          "Common Cause Variation", "Special Cause Variation Improving",
                          "Special Cause Variation Concerning", "Special Cause Warning",
                          "hover", "Special Cause Variation", "Numerator", "Denominator",
-                         "x1", "x2", "y1", "y2"))
+                         "x1", "x2", "y1", "y2", "quarter"))
 
 #' SPC Chart options
 #'
@@ -88,6 +88,7 @@ spc_chart_options <- function(x_title_size = NULL,
 #' @param .yrange Provides a axis range if the output is chart. Argument should be c(min,max). A count of 5 is +/- from values
 #' @param .chart_theme Takes a list of arguements that would appear in theme arguement of
 #' @param .line_breaks Determines whether mean and process limit lines break after a rebase. Defaults to F description
+#' @param .time_unit If time unit is set to "day", "week" or "month", reflecting daily, weekly, monthly date periods. if set to "quarter", x-axis becomes factor and converts the axis to quarterly labels.
 #' @examples
 #' #An SPC Chart
 #'
@@ -154,7 +155,8 @@ spc_chart <- function(.data,
                       .plot_title = NULL,
                       .yrange = NULL,
                       .line_breaks = F,
-                      .chart_theme = NULL){
+                      .chart_theme = NULL,
+                      .time_unit = NULL){
 
 
 
@@ -182,6 +184,13 @@ spc_chart <- function(.data,
     chart_theme <- spc_chart_options()
   } else {
     chart_theme <- .chart_theme
+  }
+  
+  
+  if(is.null(.time_unit)){
+    time_unit <- "date"
+  } else {
+    time_unit <- .time_unit
   }
 
 
@@ -292,8 +301,29 @@ spc_chart <- function(.data,
                   `Upper CI` = ifelse(greater_than_hundred == FALSE & `Upper CI` > 100,100,`Upper CI`),
                   `Lower CI` = ifelse(less_than_zero == FALSE & `Lower CI` < 0, 0, `Lower CI`),
                   `Variation Icon` = icons_list$`Variation Type`,
-                  `Assurance Icon` = icons_list$`Assurance Type`
-    )
+                  `Assurance Icon` = icons_list$`Assurance Type`,
+                  quarter = gsub("Q0", "Q4",
+                                 paste0("Q",
+                                        lubridate::quarter(time_field)-1,
+                                        " ",
+                                        ifelse(lubridate::month(time_field) %in% c(1,2,3),
+                                               paste0(stringr::str_sub(lubridate::year(time_field) - 1,-2,-1), "/", stringr::str_sub(lubridate::year(time_field),-2,-1)),
+                                               paste0(stringr::str_sub(lubridate::year(time_field),-2,-1), "/", stringr::str_sub(lubridate::year(time_field) + 1,-2,-1))
+                                        )
+                                 )
+                  )
+    ) %>% 
+    dplyr::ungroup()
+  
+  if(time_unit == "quarter"){
+    
+    quarters <- pre_plot$quarter
+    
+    pre_plot <- pre_plot %>% 
+      dplyr::mutate(time_field_ref = time_field,
+                    time_field = factor(quarter, levels = quarters))
+    
+  }
 
 
 
@@ -353,13 +383,21 @@ spc_chart <- function(.data,
   #browser()
 
   if(package == "echarts" | package == "echarts4r"){
-
-
+    
+ 
     spc <- pre_plot %>%
       echarts4r::e_charts(time_field) %>%
-      echarts4r::e_title(textStyle = list(color = "#d4d4d4")) %>%
-      echarts4r::e_x_axis(min = min(pre_plot$time_field)-5,
-                          max = max(pre_plot$time_field)+5) %>%
+      echarts4r::e_title(textStyle = list(color = "#d4d4d4")) 
+      
+      if(time_unit != "quarter"){
+        
+        spc <- spc %>% 
+          echarts4r::e_x_axis(min = min(pre_plot$time_field)-5,
+                          max = max(pre_plot$time_field)+5) 
+        
+      }
+    
+    spc <- spc %>% 
       echarts4r::e_y_axis(min = ymin, max = ymax,
                           axisLabel = list(color = "#aaa"),
                           nameGap = 40) %>%
@@ -579,17 +617,17 @@ spc_chart <- function(.data,
           ggplot2::geom_segment(ggplot2::aes(x = x1, y = y1, xend = x2, yend = y2), data = mean) +
           ggplot2::geom_segment(ggplot2::aes(x = x1, y = y1, xend = x2, yend = y2), data = ucl, linetype = "dashed") +
           ggplot2::geom_segment(ggplot2::aes(x = x1, y = y1, xend = x2, yend = y2), data = lcl, linetype = "dashed") +
-          ggplot2::geom_line(ggplot2::aes(y = value), color = "#47525a")
+          ggplot2::geom_line(ggplot2::aes(y = value, group = 1), color = "#47525a")
 
       }
 
     } else {
 
       plot <- plot +
-        ggplot2::geom_line(ggplot2::aes(y = value), color = "#47525a") +
-        ggplot2::geom_line(ggplot2::aes(y = `Upper CI`), color = "black", linetype = "dashed") +
-        ggplot2::geom_line(ggplot2::aes(y = `Lower CI`), color = "black", linetype = "dashed") +
-        ggplot2::geom_line(ggplot2::aes(y = Mean), color = "black", linetype = "solid")
+        ggplot2::geom_line(ggplot2::aes(y = value, group = 1), color = "#47525a") +
+        ggplot2::geom_line(ggplot2::aes(y = `Upper CI`,  group = 1), color = "black", linetype = "dashed") +
+        ggplot2::geom_line(ggplot2::aes(y = `Lower CI`, group = 1), color = "black", linetype = "dashed") +
+        ggplot2::geom_line(ggplot2::aes(y = Mean, group = 1), color = "black", linetype = "solid")
 
 
     }
@@ -609,11 +647,19 @@ spc_chart <- function(.data,
       ggplot2::ylim(ymin, ymax) +
       ggplot2::labs(x = xlabel,
                     y = ylabel,
-                    title = .plot_title) +
-       ggplot2::scale_x_date(labels = scales::date_format(format = x_label_format),
-                             breaks = chart_theme$x_breaks
-                             ) +
-      ggplot2::theme(
+                    title = .plot_title) 
+    
+    if(time_unit != "quarter"){
+      
+      spc <- spc + 
+        ggplot2::scale_x_date(labels = scales::date_format(format = x_label_format),
+                              breaks = chart_theme$x_breaks
+                              )
+      
+    }
+    
+     spc <- spc +
+       ggplot2::theme(
         axis.line = ggplot2::element_line(color = 'black'),
         panel.background = ggplot2::element_rect(fill = "white"),
         panel.grid.major.y = ggplot2::element_line(colour = "grey"),
@@ -634,10 +680,25 @@ spc_chart <- function(.data,
 
 
     if(!is.null(base_date_range)){
+      
+      if(time_unit != "quarter"){
+
 
       spc <- spc +
         ggplot2::geom_rect(mapping=ggplot2::aes(xmin = as.Date(base_date_range[1], "%Y-%m-%d"), xmax = as.Date(base_date_range[2], "%Y-%m-%d"),
                                        ymin = ymin, ymax = ymax), color = "#dcf0ff", fill = "#dcf0ff")
+      
+      } else {
+        
+        spc <- spc +
+          ggplot2::geom_rect(mapping=ggplot2::aes(xmin = pre_plot$quarter[pre_plot$time_field_ref == base_date_range[1]], 
+                                                  xmax = pre_plot$quarter[pre_plot$time_field_ref == base_date_range[2]],
+                                                  ymin = ymin, ymax = ymax), 
+                             color = "#dcf0ff", 
+                             fill = "#dcf0ff",
+                             alpha = 0.02)
+        
+      }
 
     }
 

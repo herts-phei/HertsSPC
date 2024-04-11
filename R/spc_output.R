@@ -41,7 +41,7 @@ utils::globalVariables(c(".","Target", "value", "time_field", "indicator",
 #' @param chart_theme Theme for chart. Uses spc_chart_options function (see ?HccSPC::spc_chart_options()).
 #' @param group_average Compare a metric value against the process of the average of a group of metrics. Defaults to F.
 #' @param nad Numerator and denominator. Set to TRUE if you have a Numerator and Denominator column and want to present them figures in the table
-#' @param time_unit Defaults to "month". Can set as "day", "month", "quarter" or "week". Only relevant when using summary or narrative outputs. If using chart, and want to edit x-axis, see spc_chart_theme(x_label_format = NULL)
+#' @param time_unit Defaults to "month". Can set as "day", "month", "quarter" or "week". Only relevant when using summary and narrative outputs. Chart only impacted if "quarter" is selected.
 #' @examples
 #'
 #' library(dplyr)

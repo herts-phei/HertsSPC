@@ -11,7 +11,8 @@ spc_chart(
   .plot_title = NULL,
   .yrange = NULL,
   .line_breaks = F,
-  .chart_theme = NULL
+  .chart_theme = NULL,
+  .time_unit = NULL
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ spc_chart(
 \item{.line_breaks}{Determines whether mean and process limit lines break after a rebase. Defaults to F description}
 
 \item{.chart_theme}{Takes a list of arguements that would appear in theme arguement of}
+
+\item{.time_unit}{If time unit is set to "day", "week" or "month", reflecting daily, weekly, monthly date periods. if set to "quarter", x-axis becomes factor and converts the axis to quarterly labels.}
 }
 \description{
 The function used to output data as an SPC chart. Can be ran independently from spc_output()
