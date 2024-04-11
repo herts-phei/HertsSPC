@@ -380,7 +380,8 @@ if(is.null(value)){
                      .plot_title = plot_title,
                      .yrange = yrange,
                      .line_breaks = line_breaks,
-                     .chart_theme = chart_theme)
+                     .chart_theme = chart_theme,
+                     .time_unit = time_unit)
 
 
   } else if(output == "status"){
