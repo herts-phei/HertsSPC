@@ -706,7 +706,7 @@ spc_chart <- function(.data,
     if(utils::tail(!is.na(pre_plot$Target),1)){
 
       spc <- spc +
-        ggplot2::geom_line(ggplot2::aes(y = Target), color = "red", linetype = "solid")
+        ggplot2::geom_line(ggplot2::aes(y = Target, group = 1), color = "red", linetype = "solid")
 
     }
 
