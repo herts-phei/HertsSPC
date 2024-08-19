@@ -33,6 +33,7 @@ utils::globalVariables(c(".","Target", "value", "time_field", "indicator",
 #' Reflects periods of rebasing. Can be rebased multiple times. Processing function will fill dates of rebasing downwards. E.g. above example, there will be three groups, start:2021-09-01, 2021-10-01:2022-06-01, 2022-07-01:end
 #' @param target Defaults to NULL. Target can either be inputted as a column character string or a known integer, e.g. 80
 #' @param output "data", "chart", "summary", "narrative" or "status"
+#' @param summary_output The desired output type of summary, depending on intentions. Either "table", which produces the final table summary (flextable or reactable depending on mode), or "dataframe", which returns the summary as is before the final table output. Allows for further editing.
 #' @param line_breaks Defaults to F. Determines whether lines will have breaks between rebasing (LCL, UCL and Mean)
 #' @param mode "interactive" or "static", depending on output desired. Applied to narratives and summaries
 #' @param package In respect to interactive charts output, "ggplot2", "echarts"/"echarts4r" or "plotly"
@@ -180,6 +181,7 @@ spc_output <- function(data,
                        target = NULL,
                        mode = "static",
                        output = "chart",
+                       summary_output = "table",
                        package = NULL,
                        plot_title = NULL,
                        yrange = NULL,
@@ -369,7 +371,8 @@ if(is.null(value)){
                              .time_field = time_field,
                              .indicator = indicator,
                              .nad = nad,
-                             .time_unit = time_unit)
+                             .time_unit = time_unit,
+                             .summary_output = summary_output)
 
   } else if(output == "chart"){
 

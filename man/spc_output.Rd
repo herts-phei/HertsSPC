@@ -16,6 +16,7 @@ spc_output(
   target = NULL,
   mode = "static",
   output = "chart",
+  summary_output = "table",
   package = NULL,
   plot_title = NULL,
   yrange = NULL,
@@ -49,6 +50,8 @@ Reflects periods of rebasing. Can be rebased multiple times. Processing function
 \item{mode}{"interactive" or "static", depending on output desired. Applied to narratives and summaries}
 
 \item{output}{"data", "chart", "summary", "narrative" or "status"}
+
+\item{summary_output}{The desired output type of summary, depending on intentions. Either "table", which produces the final table summary (flextable or reactable depending on mode), or "dataframe", which returns the summary as is before the final table output. Allows for further editing.}
 
 \item{package}{In respect to interactive charts output, "ggplot2", "echarts"/"echarts4r" or "plotly"}
 

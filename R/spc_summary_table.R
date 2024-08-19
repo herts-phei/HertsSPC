@@ -20,6 +20,7 @@ utils::globalVariables(c(".","time_field", "indicator", "value", "Mean", "upper_
 #' @param .value column reflecting value to be reported. Needed for column header
 #' @param .nad Determines whether the numerator and denominator appear in the final table (alongside the value). Only set to T if a numerator and denominator column is present in your input dataframe. Defaults to F.
 #' @param .time_unit Can be set to "month", "day", "quarter" or "week". Determines the date column format in the summary table.
+#' @param .summary_output summary_output The desired output type of summary, depending on intentions. Either "table", which produces the final table summary (flextable or reactable depending on mode), or "dataframe", which returns the summary as is before the final table output. Allows for further editing.
 #' @examples
 #'
 #' library(dplyr)
@@ -67,7 +68,8 @@ spc_summary_table <- function(.data,
                               .time_field,
                               .value,
                               .nad = FALSE,
-                              .time_unit = "month"
+                              .time_unit = "month",
+                              .summary_output = "table"
 ){
 
 
@@ -78,7 +80,7 @@ spc_summary_table <- function(.data,
   mode <- .mode
   data <- .data
   time_unit <- if(.time_unit == "month") "%b-%Y" else if(.time_unit == "day") "%d %b %Y" else if(.time_unit == "week") "%d %b %Y" else if(.time_unit == "quarter") NA
-
+  summary_output <- .summary_output
 
 
   if(.nad == T & ("Numerator" %in% colnames(data)  == F | "Denominator" %in% colnames(data)== F)){
@@ -188,8 +190,9 @@ spc_summary_table <- function(.data,
       ))
   }
 
+  
 
-  if(mode == "interactive"){
+  if(mode == "interactive" & summary_output != "dataframe"){
 
 
     spc_table <- spc_table %>%
@@ -280,7 +283,7 @@ spc_summary_table <- function(.data,
 
 
 
-  } else if(mode == "static"){
+  } else if(mode == "static"  & summary_output != "dataframe"){
 
 
 
@@ -346,7 +349,50 @@ spc_summary_table <- function(.data,
           scroll = NULL))
 
 
+  } else if(summary_output == "dataframe"){
+    
+    
+    spc_table <- spc_table %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(Assurance = ifelse(Assurance == " " | is.na(Assurance),
+                                       paste0("icons/", "white_space.png"),
+                                       Assurance),
+                    Variation = ifelse(Variation == " ",
+                                       paste0("icons/","white_space.png"),
+                                       Variation),
+                    value = ifelse(.nad == T & unit == "percent",
+                                   paste0(value, " (", Numerator, "/",Denominator,")"),
+                                   value)
+      )
+    
+    
+    for(i in 1:nrow(spc_table)){
+      
+      if(spc_table[i, "Variation"] != " "){
+        
+        spc_table[i, "Variation"] <- system.file(paste0(spc_table[i, "Variation"]), package = "HertsSPC")
+        
+      }
+      
+      
+      if(spc_table[i, "Assurance"] != " "){
+        
+        spc_table[i, "Assurance"] <- system.file(paste0(spc_table[i, "Assurance"]), package = "HertsSPC")
+        
+      }
+      
+      
+    }
+    
+    
+    fontname <- "Arial"
+    
+    spc_table <-  spc_table %>%
+      dplyr::select(indicator, time_field, value,  Target,
+                    Variation, Assurance, Mean)
+    
   }
+    
 
 
   return(spc_table)

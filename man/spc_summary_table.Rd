@@ -11,7 +11,8 @@ spc_summary_table(
   .time_field,
   .value,
   .nad = FALSE,
-  .time_unit = "month"
+  .time_unit = "month",
+  .summary_output = "table"
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ spc_summary_table(
 \item{.nad}{Determines whether the numerator and denominator appear in the final table (alongside the value). Only set to T if a numerator and denominator column is present in your input dataframe. Defaults to F.}
 
 \item{.time_unit}{Can be set to "month", "day", "quarter" or "week". Determines the date column format in the summary table.}
+
+\item{.summary_output}{summary_output The desired output type of summary, depending on intentions. Either "table", which produces the final table summary (flextable or reactable depending on mode), or "dataframe", which returns the summary as is before the final table output. Allows for further editing.}
 }
 \description{
 The function used to output data as an SPC summary table. Can be ran independently from spc_output()
