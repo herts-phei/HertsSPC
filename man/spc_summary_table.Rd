@@ -12,7 +12,8 @@ spc_summary_table(
   .value,
   .nad = FALSE,
   .time_unit = "month",
-  .summary_output = "table"
+  .summary_output = "table",
+  .sort_by = "concern both by assurance"
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ spc_summary_table(
 \item{.time_unit}{Can be set to "month", "day", "quarter" or "week". Determines the date column format in the summary table.}
 
 \item{.summary_output}{summary_output The desired output type of summary, depending on intentions. Either "table", which produces the final table summary (flextable or reactable depending on mode), or "dataframe", which returns the summary as is before the final table output. Allows for further editing.}
+
+\item{.sort_by}{Determines sorting of table. Can be sorted by assurance, variation, by both, or by alphabetical order of indicator. Defaults to "concern both by assurance". See ?HertsSPC::sort_spc_summary_table() for all available options. To sort by indicator alphabetically, assign "indicator"}
 }
 \description{
 The function used to output data as an SPC summary table. Can be ran independently from spc_output()

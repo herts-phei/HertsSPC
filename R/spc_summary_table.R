@@ -20,6 +20,7 @@ utils::globalVariables(c(".","time_field", "indicator", "value", "Mean", "upper_
 #' @param .value column reflecting value to be reported. Needed for column header
 #' @param .nad Determines whether the numerator and denominator appear in the final table (alongside the value). Only set to T if a numerator and denominator column is present in your input dataframe. Defaults to F.
 #' @param .time_unit Can be set to "month", "day", "quarter" or "week". Determines the date column format in the summary table.
+#' @param .sort_by Determines sorting of table. Can be sorted by assurance, variation, by both, or by alphabetical order of indicator. Defaults to "concern both by assurance". See ?HertsSPC::sort_spc_summary_table() for all available options. To sort by indicator alphabetically, assign "indicator"
 #' @param .summary_output summary_output The desired output type of summary, depending on intentions. Either "table", which produces the final table summary (flextable or reactable depending on mode), or "dataframe", which returns the summary as is before the final table output. Allows for further editing.
 #' @examples
 #'
@@ -69,7 +70,8 @@ spc_summary_table <- function(.data,
                               .value,
                               .nad = FALSE,
                               .time_unit = "month",
-                              .summary_output = "table"
+                              .summary_output = "table",
+                              .sort_by = "concern both by assurance"
 ){
 
 
@@ -162,11 +164,6 @@ spc_summary_table <- function(.data,
     dplyr::group_by(indicator) %>%
     dplyr::filter(time_field == max(time_field)) %>%
     dplyr::ungroup() %>%
-    dplyr::arrange(match(assurance_sort, c("failing target", "variable target", "on target")),
-                   match(variation_sort, c("concern special high", "concern special low",
-                                                 "common cause", "improve special low",
-                                                 "improve special high","neutral special high",
-                                                 "neutral special low"))) %>%
     dplyr::select(indicator, time_field, value, Target,
                   Variation, Assurance, dplyr::contains("Status"),
                   dplyr::contains("Numerator"), dplyr::contains("Denominator"),
@@ -174,6 +171,10 @@ spc_summary_table <- function(.data,
                   assurance_sort, variation_sort)
 
 
+  spc_table <- sort_spc_summary_table(data = spc_table,     # Find function in helpers.R
+                                      sort_by = .sort_by)
+  
+  
   if(time_unit != "quarter"){
     spc_table <- spc_table %>%
       dplyr::mutate(time_field = format(time_field, time_unit))

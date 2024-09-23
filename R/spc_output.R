@@ -43,6 +43,7 @@ utils::globalVariables(c(".","Target", "value", "time_field", "indicator",
 #' @param group_average Compare a metric value against the process of the average of a group of metrics. Defaults to F.
 #' @param nad Numerator and denominator. Set to TRUE if you have a Numerator and Denominator column and want to present them figures in the table
 #' @param time_unit Defaults to "month". Can set as "day", "month", "quarter" or "week". Only relevant when using summary and narrative outputs. Chart only impacted if "quarter" is selected.
+#' @param sort_by Determines sorting of table. Can be sorted by assurance, variation, by both, or by alphabetical order of indicator. Defaults to "concern both by assurance". See ?HertsSPC::sort_spc_summary_table() for all available options. To sort by indicator alphabetically, assign "indicator" description
 #' @examples
 #'
 #' library(dplyr)
@@ -189,6 +190,7 @@ spc_output <- function(data,
                        line_breaks = FALSE,
                        chart_theme = NULL,
                        nad = FALSE,
+                       sort_by = "concern both by assurance",
                        time_unit = "month"
 ){
 
@@ -233,7 +235,18 @@ spc_output <- function(data,
     if(!is.numeric(data$Target)) stop("Target column specified is not numeric!")
 
   }
+  
 
+  if(output == "summary" & !sort_by %in% c("indicator",
+                                           "assurance concern", "assurance improve", 
+                                           "variation concern",  "variation improve", 
+                                           "improve both by variation", "improve both by assurance", 
+                                           "concern both by assurance", "concern both by variation")){
+    
+    stop("Output is summary but sort by is assigned as an unavailable options. Use ?HertsSPC::sort_spc_summary_table() to see all options!")
+    
+  }
+  
 
   if(!("greater_than_hundred" %in% colnames(data))){
     data$greater_than_hundred <- F
@@ -372,6 +385,7 @@ if(is.null(value)){
                              .indicator = indicator,
                              .nad = nad,
                              .time_unit = time_unit,
+                             .sort_by = sort_by,
                              .summary_output = summary_output)
 
   } else if(output == "chart"){

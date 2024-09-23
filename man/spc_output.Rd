@@ -24,6 +24,7 @@ spc_output(
   line_breaks = FALSE,
   chart_theme = NULL,
   nad = FALSE,
+  sort_by = "concern both by assurance",
   time_unit = "month"
 )
 }
@@ -66,6 +67,8 @@ Reflects periods of rebasing. Can be rebased multiple times. Processing function
 \item{chart_theme}{Theme for chart. Uses spc_chart_options function (see ?HccSPC::spc_chart_options()).}
 
 \item{nad}{Numerator and denominator. Set to TRUE if you have a Numerator and Denominator column and want to present them figures in the table}
+
+\item{sort_by}{Determines sorting of table. Can be sorted by assurance, variation, by both, or by alphabetical order of indicator. Defaults to "concern both by assurance". See ?HertsSPC::sort_spc_summary_table() for all available options. To sort by indicator alphabetically, assign "indicator" description}
 
 \item{time_unit}{Defaults to "month". Can set as "day", "month", "quarter" or "week". Only relevant when using summary and narrative outputs. Chart only impacted if "quarter" is selected.}
 }
