@@ -21,7 +21,7 @@ spc_img_uri <- function(icon_string
 #'
 #' @description The function used to sort the SPC summary table by desired columns and desired order. Function used within the processing of the SPC summary table as columns cannot be custom sorted once the flextable or reactable is prodcued
 #' @param data The data is the SPC summary table dataframe once icons have been determined
-#' @param sort_by The desired sorting mechanism. Can be any of the following: "indicator", "assurance concern", "assurance improve", "variation concern", "variation improve", "improve both by variation", "improve both by assurance", "concern both by assurance", "concern both by variation"
+#' @param sort_by The desired sorting mechanism. Can be any of the following: "indicator", "assurance concern", "assurance improve", "variation concern", "variation improve", "improve both by variation", "improve both by assurance", "concern both by assurance", "concern both by variation". You can also supply a concatenated list of names to allow for a non-alphabetic, custom order of metrics/indicators in your summary table. For example, sort_by = c("Indicator 2", "Indicator 1")
 #' @examples
 #'
 #' #Not to be used independently
@@ -32,7 +32,23 @@ sort_spc_summary_table <- function(data,
                                    sort_by){
   
   
-  if(sort_by == "indicator"){   # Sort descending alphabetically
+  
+  if(length(sort_by) > 1){
+    
+    if(identical(sort(data$indicator), sort(sort_by)) == FALSE) {
+      
+      stop(
+        paste0("Metrics in indicator column do not completely match metrics in sort_by arguement. ",
+               "The following metrics would be presented in the SPC Summary:\n",
+               paste(sort(data$indicator), collapse = "\n")
+               )
+        )
+      
+    }
+    
+    data <- dplyr::arrange(data, match(indicator, sort_by))
+    
+  } else if(sort_by == "indicator"){   # Sort descending alphabetically
     data <- dplyr::arrange(data, indicator)
   } else if(sort_by == "assurance concern"){
     data <- dplyr::arrange(data, match(assurance_sort, c("failing target", "variable target", "on target")))

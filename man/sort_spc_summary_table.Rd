@@ -9,7 +9,7 @@ sort_spc_summary_table(data, sort_by)
 \arguments{
 \item{data}{The data is the SPC summary table dataframe once icons have been determined}
 
-\item{sort_by}{The desired sorting mechanism. Can be any of the following: "indicator", "assurance concern", "assurance improve", "variation concern", "variation improve", "improve both by variation", "improve both by assurance", "concern both by assurance", "concern both by variation"}
+\item{sort_by}{The desired sorting mechanism. Can be any of the following: "indicator", "assurance concern", "assurance improve", "variation concern", "variation improve", "improve both by variation", "improve both by assurance", "concern both by assurance", "concern both by variation". You can also supply a concatenated list of names to allow for a non-alphabetic, custom order of metrics/indicators in your summary table. For example, sort_by = c("Indicator 2", "Indicator 1")}
 }
 \description{
 The function used to sort the SPC summary table by desired columns and desired order. Function used within the processing of the SPC summary table as columns cannot be custom sorted once the flextable or reactable is prodcued
