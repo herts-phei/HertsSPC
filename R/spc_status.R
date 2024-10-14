@@ -2,6 +2,7 @@ utils::globalVariables(c(".","time_field", "indicator", "value", "Mean", "upper_
                          "unit", "mean", "polarity", "Target", "cons_trend6_icon",
                          "value_breach_icon", "higher_than_mean",
                          "lower_than_mean", "two_low_sum", "two_high_sum",
+                         "two_low", "two_high",
                          "value_breach",
                          "variation_sort", "assurance_sort",
                          "variation", "assurance",
@@ -70,32 +71,32 @@ spc_status <- function(.data,
                     unique(polarity) == "up" & (value_breach_icon == "Lower" |
                                                   cons_trend6_icon == "Lower" |
                                                   !is.na(utils::tail(lower_than_mean, 1)) |
-                                                  two_low_sum == 1
+                                                  two_low == 1
                     ) ~ "concern special low",
                     unique(polarity) == "up" & (value_breach_icon == "Higher" |
                                                   cons_trend6_icon == "Higher" |
                                                   !is.na(utils::tail(higher_than_mean, 1)) |
-                                                  two_high_sum == 1
+                                                  two_high == 1
                     ) ~ "improve special high",
                     unique(polarity) == "neutral" & (value_breach_icon == "Higher" |
                                                        cons_trend6_icon == "Higher" |
                                                        !is.na(utils::tail(higher_than_mean, 1)) |
-                                                       two_high_sum == 1
+                                                       two_high == 1
                     ) ~ "neutral special high",
                     unique(polarity) == "neutral" & (value_breach_icon == "Lower" |
                                                        cons_trend6_icon == "Lower" |
                                                        !is.na(utils::tail(lower_than_mean, 1)) |
-                                                       two_low_sum == 1
+                                                       two_low == 1
                     ) ~ "neutral special low",
                     unique(polarity) == "down" & (value_breach_icon == "Lower" |
                                                     cons_trend6_icon == "Lower" |
                                                     !is.na(utils::tail(lower_than_mean, 1)) |
-                                                    two_low_sum == 1
+                                                    two_low == 1
                     ) ~ "improve special low",
                     unique(polarity) == "down" & (value_breach_icon == "Higher" |
                                                     cons_trend6_icon == "Higher" |
                                                     !is.na(utils::tail(higher_than_mean, 1)) |
-                                                    two_high_sum == 1
+                                                    two_high == 1
                     ) ~ "concern special high",
                     T ~ "common cause")
     )  %>%
