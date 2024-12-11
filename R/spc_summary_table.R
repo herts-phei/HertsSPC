@@ -94,11 +94,11 @@ spc_summary_table <- function(.data,
   spc_table <- data %>%
     dplyr::group_by(indicator) %>%
     dplyr::mutate(assurance_sort = dplyr::case_when(unique(polarity) == "up" & utils::tail(lower_ci,1) > utils::tail(Target,1) ~ "on target",
-                                                    unique(polarity) == "up" & utils::tail(upper_ci, 1) <= utils::tail(Target,1)  ~ "failing target",
-                                                    unique(polarity) == "up" & utils::tail(upper_ci,1) >= utils::tail(Target, 1) & utils::tail(Target, 1) > utils::tail(lower_ci, 1) ~ "variable target",
+                                                    unique(polarity) == "up" & utils::tail(upper_ci, 1) < utils::tail(Target,1)  ~ "failing target",
+                                                    unique(polarity) == "up" & utils::tail(upper_ci,1) >= utils::tail(Target, 1) & utils::tail(Target, 1) >= utils::tail(lower_ci, 1) ~ "variable target",
                                                     unique(polarity) == "down" & utils::tail(upper_ci, 1) < utils::tail(Target, 1) ~ "on target",
-                                                    unique(polarity) == "down" & utils::tail(lower_ci, 1) >= utils::tail(Target, 1) ~ "failing target",
-                                                    unique(polarity) == "down" & utils::tail(upper_ci, 1) >= utils::tail(Target, 1) & utils::tail(Target, 1) > utils::tail(lower_ci, 1) ~ "variable target",
+                                                    unique(polarity) == "down" & utils::tail(lower_ci, 1) > utils::tail(Target, 1) ~ "failing target",
+                                                    unique(polarity) == "down" & utils::tail(upper_ci, 1) >= utils::tail(Target, 1) & utils::tail(Target, 1) >= utils::tail(lower_ci, 1) ~ "variable target",
                                                     T ~ "NO ASSURANCE"),
                   Assurance = dplyr::case_when(
                     assurance_sort == "on target" ~ paste0("icons/" ,"Consistently_Hitting_Target_Transparent.png"),

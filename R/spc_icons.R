@@ -28,17 +28,17 @@ spc_icons <- function(.data,
 
     assurance <- "white_space.png"
 
-  } else if(polarity == "up"  & utils::tail(data$Target, 1) <= utils::tail(data$lower_ci,1)){
+  } else if(polarity == "up"  & utils::tail(data$Target, 1) < utils::tail(data$lower_ci,1)){
     assurance = "Consistently_Hitting_Target_Transparent.png"
   } else if(polarity == "up" & utils::tail(data$Target, 1) > utils::tail(data$upper_ci, 1)){
     assurance = "Consistently_Failing_Target_Transparent.png"
-  } else if(polarity == "up" & utils::tail(data$upper_ci, 1) >= utils::tail(data$Target, 1) & utils::tail(data$Target, 1) > utils::tail(data$lower_ci, 1)){
+  } else if(polarity == "up" & utils::tail(data$upper_ci, 1) >= utils::tail(data$Target, 1) & utils::tail(data$Target, 1) >= utils::tail(data$lower_ci, 1)){
     assurance = "Hit_and_Miss_Transparent.png"
-  } else if(polarity == "down" & utils::tail(data$Target, 1) >= utils::tail(data$upper_ci, 1)){
+  } else if(polarity == "down" & utils::tail(data$Target, 1) > utils::tail(data$upper_ci, 1)){
     assurance = "Consistently_Hitting_Target_Transparent.png"
   } else if(polarity == "down" & utils::tail(data$Target, 1) < utils::tail(data$lower_ci, 1)){
     assurance = "Consistently_Failing_Target_Transparent.png"
-  } else if(polarity == "down" & utils::tail(data$upper_ci, 1) >= utils::tail(data$Target, 1) & utils::tail(data$Target, 1) > utils::tail(data$lower_ci, 1)){
+  } else if(polarity == "down" & utils::tail(data$upper_ci, 1) >= utils::tail(data$Target, 1) & utils::tail(data$Target, 1) >= utils::tail(data$lower_ci, 1)){
     assurance = "Hit_and_Miss_Transparent.png"
   }
 

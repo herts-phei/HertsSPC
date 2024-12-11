@@ -58,11 +58,11 @@ spc_status <- function(.data,
   spc_table <- data %>%
     dplyr::group_by(indicator) %>%
     dplyr::mutate(assurance = dplyr::case_when(unique(polarity) == "up" & utils::tail(lower_ci,1) > utils::tail(Target,1) ~ "on target",
-                                               unique(polarity) == "up" & utils::tail(upper_ci, 1) <= utils::tail(Target,1)  ~ "failing target",
-                                               unique(polarity) == "up" & utils::tail(upper_ci,1) >= utils::tail(Target, 1) & utils::tail(Target, 1) > utils::tail(lower_ci, 1) ~ "variable target",
+                                               unique(polarity) == "up" & utils::tail(upper_ci, 1) < utils::tail(Target,1)  ~ "failing target",
+                                               unique(polarity) == "up" & utils::tail(upper_ci,1) >= utils::tail(Target, 1) & utils::tail(Target, 1) >= utils::tail(lower_ci, 1) ~ "variable target",
                                                unique(polarity) == "down" & utils::tail(upper_ci, 1) < utils::tail(Target, 1) ~ "on target",
-                                               unique(polarity) == "down" & utils::tail(lower_ci, 1) >= utils::tail(Target, 1) ~ "failing target",
-                                               unique(polarity) == "down" & utils::tail(upper_ci, 1) >= utils::tail(Target, 1) & utils::tail(Target, 1) > utils::tail(lower_ci, 1) ~ "variable target")
+                                               unique(polarity) == "down" & utils::tail(lower_ci, 1) > utils::tail(Target, 1) ~ "failing target",
+                                               unique(polarity) == "down" & utils::tail(upper_ci, 1) >= utils::tail(Target, 1) & utils::tail(Target, 1) >= utils::tail(lower_ci, 1) ~ "variable target")
     ) %>%
     dplyr::mutate(indicator = as.character(as.factor(indicator)),
                   upper_ci = round(upper_ci, 2),
