@@ -25,26 +25,31 @@ utils::globalVariables(c(".","time_field", "value", "Mean", "Upper CI", "Lower C
 #'
 #' library(dplyr)
 #'
-#'tooth_data <- force(ToothGrowth) %>%
-#'   filter(supp == "VC") %>% slice(-15:-27) %>%
-#'   mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
-#'          supp = "Indicator 1",
-#'          polarity = "up",
-#'          greater_than_hundred = FALSE,
-#'          less_than_zero = FALSE,
-#'          unit = "count")
-#'
-#'spc_output(
-#'        data = tooth_data,
-#'        time_field = "Date",
-#'        indicator = "supp",
-#'        value = "len",
-#'        output = "chart",
-#'        package = "ggplot",
-#'        chart_theme = spc_chart_options(x_title_size = 20,
-#'                                         x_label = "Date",
-#'                                         y_label = "Measure",
-#'                                         x_label_format = "%d %b"))
+#' start_date <- as.Date("2025-01-01")
+#' end_date <- as.Date("2025-01-20")
+#' date_sequence <- seq.Date(from = start_date, to = end_date, by = "day")
+#' 
+#' indicator_data <-
+#'   data.frame(Date = date_sequence,
+#'              kpi = "Indicator 1",
+#'              indicator_value = c(45,48,44,43,45,
+#'                                  65,45,46,46,44,
+#'                                  43,42,41,40,39,
+#'                                  46,47,56,52,50),
+#'              target = 60)
+#' 
+#' spc_output(
+#'   data = indicator_data,
+#'   time_field = "Date",
+#'   indicator = "kpi",
+#'   value = "indicator_value",
+#'   output = "chart",
+#'   package = "ggplot",
+#'   chart_theme = spc_chart_options(x_title_size = 20,
+#'                                   x_label = "Date",
+#'                                   y_label = "Measure",
+#'                                   x_label_format = "%d %b",
+#'                                   x_breaks = "1 day"))
 #'
 #' @export
 #'
@@ -86,58 +91,71 @@ spc_chart_options <- function(x_title_size = NULL,
 #' @param .package Package as entered into spc_output(package) or can be entered into spc_chart() the same way ("echarts"/"echarts4r", "plotly" or "ggplot")
 #' @param .plot_title Provides the plot with a title if the output is chart
 #' @param .yrange Provides a axis range if the output is chart. Argument should be c(min,max). A count of 5 is +/- from values
-#' @param .chart_theme Takes a list of arguements that would appear in theme arguement of
+#' @param .chart_theme Takes a list of arguments that would appear in theme argument of
 #' @param .line_breaks Determines whether mean and process limit lines break after a rebase. Defaults to F description
 #' @param .time_unit If time unit is set to "day", "week" or "month", reflecting daily, weekly, monthly date periods. if set to "quarter", x-axis becomes factor and converts the axis to quarterly labels.
 #' @examples
 #' #An SPC Chart
 #'
-#'library(dplyr)
+#' library(dplyr)
+#' 
+#' start_date <- as.Date("2025-01-01")
+#' end_date <- as.Date("2025-01-20")
+#' date_sequence <- seq.Date(from = start_date, to = end_date, by = "day")
+#' 
+#' 
+#' indicator_data_1 <- 
+#'   data.frame(Date = date_sequence,
+#'              kpi = "Indicator 1",
+#'              indicator_value = c(45,48,44,43,45,
+#'                                  65,45,46,46,44,
+#'                                  43,42,41,40,39,
+#'                                  46,47,56,52,50),
+#'              target = 60)
+#' 
+#' indicator_data_2 <- 
+#'   data.frame(Date = date_sequence,
+#'              kpi = "Indicator 2",
+#'              indicator_value = c(45,48,44,43,45,
+#'                                  45,45,47,46,44,
+#'                                  43,44,43,28,44,
+#'                                  45,47,45,43,46),
+#'              target = 45)
+#' 
+#' 
+#' all_indicator_data <- bind_rows(indicator_data_1, indicator_data_2) %>% 
+#'   dplyr::mutate(polarity = "up",
+#'                 greater_than_hundred = FALSE,
+#'                 less_than_zero = FALSE,
+#'                 unit = "count")
+#' 
+#' spc_data <- HertsSPC::spc_output(
+#'   data = all_indicator_data,
+#'   time_field = "Date",
+#'   indicator = "kpi",
+#'   value = "indicator_value",
+#'   output = "data",
+#'   target = "target"
+#' )
 #'
-#'tooth_data <- force(ToothGrowth) %>%
-#'   filter(supp == "VC") %>% slice(-15:-27) %>%
-#'   mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
-#'          supp = "Indicator 1",
-#'          polarity = "up",
-#'          greater_than_hundred = FALSE,
-#'          less_than_zero = FALSE,
-#'          unit = "count")
-#'
-#'tooth_data2 <- force(ToothGrowth) %>%
-#'   filter(supp == "VC") %>% slice(-15:-27) %>%
-#'   mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
-#'          supp = "Indicator 2",
-#'          polarity = "up",
-#'          greater_than_hundred = FALSE,
-#'          less_than_zero = FALSE,
-#'          unit = "count") %>%
-#'   bind_rows(tooth_data)
 #'
 #'
-#'# Retreive SPC data
-#'
-#'spc_data <- spc_output(
-#'        data = tooth_data2,
-#'        time_field = "Date",
-#'        indicator = "supp",
-#'        value = "len",
-#'        output = "data")
-#'
-#'spc_chart(.data = filter(spc_data, indicator == "Indicator 1"),
+#' spc_chart(.data = filter(spc_data, indicator == "Indicator 1"),
 #'           .package = "ggplot",
-#'           .plot_title = "ABCD",
-#'           .base_date_range = NULL)
+#'           .plot_title = "SPC for Indicator 1 (ggplot2)",
+#'           .base_date_range = NULL,
+#'           .chart_theme = spc_chart_options(x_title_size = 20,
+#'                                   x_label = "Date",
+#'                                   y_label = "Measure",
+#'                                   x_label_format = "%d %b",
+#'                                   x_breaks = "1 day"))
+#'           
 #'
-#'spc_chart(.data = filter(spc_data, indicator == "Indicator 2"),
-#'           .plot_title = "VC Plotly (equal axis)",
+#' spc_chart(.data = filter(spc_data, indicator == "Indicator 2"),
+#'           .plot_title = "SPC for Indicator 2 (Plotly)",
 #'           .base_date_range = NULL,
 #'           .package = "plotly",
-#'           .yrange = c(min(c(spc_data$value, spc_data$Target,
-#'                             spc_data$upper_ci, spc_data$lower_ci),
-#'                             na.rm = TRUE),
-#'                       max(c(spc_data$value, spc_data$Target,
-#'                             spc_data$upper_ci, spc_data$lower_ci),
-#'                             na.rm = TRUE)))
+#'           .yrange = c(0, 100))
 #'
 #'
 #'
@@ -166,6 +184,9 @@ spc_chart <- function(.data,
   line_breaks <- .line_breaks
 
   
+  # Some warning messages if the packages haven't been assigned appropriately
+  # The function only uses ggplot, plotly or echarts
+  
   if(is.null(package)){
     warning("You have requested a chart but you have not specified a package. Defaults to a static ggplot. Set package as either 'ggplot' for static or 'plotly' or 'echarts'/'echarts4r' for an interactive chart!")
     package = "ggplot"
@@ -174,11 +195,16 @@ spc_chart <- function(.data,
     package = "ggplot"
   }
 
+  
+  # This chart function takes one kpi at at time
+  # If there is more than one indicator in the indicator column, or duplicate 
+  # dates in the time field, it will produce the following error
+  
   if(length(unique(.data$indicator)) > 1 | any(duplicated(.data$time_field)) == T){
     stop("Your calling this chart function with more than one indicator. Filter input data for one indicator. If mass processing, putting function in a loop is recommeneded.")
   }
 
-
+  # Set basic chart theme, unless chart theme has been provided as an argument
 
   if(is.null(.chart_theme)){
     chart_theme <- spc_chart_options()
@@ -194,11 +220,13 @@ spc_chart <- function(.data,
   }
 
 
-
+  # Returns appropriate status for the KPI
+  # Used to determine the icons for the chart
+  
   icons_list <- spc_status(.data = data)
 
-  # Formatting table for input into graphs  --------
-
+  
+  # Unit for the y axis
 
   if(unique(data$unit) == "percent"){
     unit = "%"
@@ -206,8 +234,20 @@ spc_chart <- function(.data,
     unit = ""
   }
 
+  
+  # The code pivots the data in order to easier obtain descriptions for 
+  # each data point
+  # Works, but there may be more efficient means
 
   spc_pivot <- data %>%
+    
+    # Select columns of interest
+    # The pivot will then create a row in each time field for value, value_line,
+    # mean, upper ci, lower ci, and any triggers hit and for hovers
+    
+    # For example, in the case of "Indicator 1" in the read.me will have a 
+    # breach_above row for January 06
+    
     dplyr::select(
       time_field, value, value_line, Target, Mean = mean,
       `Upper CI` = upper_ci, `Lower CI` = lower_ci,
@@ -223,6 +263,10 @@ spc_chart <- function(.data,
                                  two_low_sum, two_high_sum),
                         names_to = "variable", values_to = "value") %>%
     dplyr::filter(!is.na(value)) %>%
+    
+    # Create a hover column so text is aligned with the appropriate special cause
+    # Most hover rows will be empty
+    
     dplyr::mutate(hover = dplyr::case_when(variable == "breach_below" ~ "Breach below lower limit",
                                            variable == "breach_above" ~ "Breach above upper limit",
                                            variable == "higher_than_mean" ~ "Point one of six(+) above mean",
@@ -234,6 +278,10 @@ spc_chart <- function(.data,
                                            variable == "two_low_sum" ~ "2 out of 3 points in zone A (LCL)",
                                            variable == "two_high_sum" ~ "2 out of 3 points in zone A (UCL)",
                                            T ~ "")) %>%
+    
+    # Any special cause trigger will be assigned to appropriate summary in the 
+    # variable column. Variables such as mean, upper ci and lower ci remain the same
+    
     dplyr::mutate(variable = dplyr::case_when(variable %in% c("breach_below", "cons_trend6_low", "lower_than_mean", "two_low_sum", "four_five_low_sum") &
                                                 polarity == "up" ~ "Special Cause Variation Concerning",
                                               variable %in% c("breach_below", "cons_trend6_low", "lower_than_mean", "two_low_sum", "four_five_low_sum") &
@@ -247,6 +295,11 @@ spc_chart <- function(.data,
                                               variable %in% c("breach_above", "higher_than_mean",  "cons_trend6_high", "two_high_sum", "four_five_high_sum") &
                                                 polarity == "down" ~ "Special Cause Variation Concerning",
                                               T ~ variable)) %>%
+    
+    # For each date, variables are grouped and the hover is pasted together
+    # For example, a special cause trigger of consecutive decrease and six below 
+    # the mean may be pasted together
+    
     dplyr::group_by(time_field, variable) %>%
     dplyr::mutate(hover = paste0(hover, collapse = "<br>"),
                   time_field = as.Date(time_field)) %>%
@@ -254,6 +307,10 @@ spc_chart <- function(.data,
     dplyr::distinct(time_field, variable, .keep_all = T)
 
 
+  
+  # Very rare, but is there is a point with a concerning and improving 
+  # trigger, the improving overides the concerning
+  
   table <- list()
 
   for(t in unique(spc_pivot$time_field)){
@@ -277,15 +334,20 @@ spc_chart <- function(.data,
 
   hover_text <- dplyr::filter(unique(dplyr::select(spc_pivot, time_field, hover)), hover != "")
 
+  # Pivot the data back wider rejoin the hover column
+  # For each row, ensure a special cause column exists (even if there isn't a trigger)
+  # When no special cause exists for a row, the value is assigned to common cause
+  # Assign the assurance and variation icons (these are only really reflective of the last point)
+  # 
+  
   pre_plot <- spc_pivot %>%
     dplyr::select(-hover) %>%
     tidyr::pivot_wider(names_from = variable, values_from = value) %>%
     dplyr::left_join(hover_text, by = "time_field") %>%
     dplyr::rowwise() %>%
-    dplyr::mutate(time_field_hover = format(time_field, "%b-%Y"),
-                  hover = ifelse(is.na(hover),
-                                 paste0(time_field_hover, "<br>Common Cause Variation (",value, unit,")"),
-                                 paste0(time_field_hover, "<br>Special Cause Variation (", value, unit, ") :<br>", hover)),
+    dplyr::mutate(hover = ifelse(is.na(hover),
+                                 paste0(time_field, "<br>Common Cause Variation (",value, unit,")"),
+                                 paste0(time_field, "<br>Special Cause Variation (", value, unit, ") :<br>", hover)),
                   `Special Cause Variation Improving` = ifelse("Special Cause Variation Improving" %in% names(.), `Special Cause Variation Improving`, NA),
                   `Special Cause Variation Improving` = as.numeric(`Special Cause Variation Improving`),
                   `Special Cause Variation` = as.numeric(ifelse("Special Cause Variation" %in% names(.), `Special Cause Variation`, NA)),
@@ -380,8 +442,10 @@ spc_chart <- function(.data,
 
   }
   
-  #browser()
-
+  
+  # The following if else statements create an echart, plotly or ggplot depending 
+  # on the package passed through to the function
+  
   if(package == "echarts" | package == "echarts4r"){
     
  
@@ -420,6 +484,14 @@ spc_chart <- function(.data,
       echarts4r::e_axis_labels(x = "Date", y = ylabel) %>%
       echarts4r::e_theme("wonderland") %>%
       echarts4r::e_hide_grid_lines(which = c("y","x"))
+    
+    
+    if(utils::tail(!is.na(pre_plot$Target),1)){
+      
+      spc <- spc %>%
+        echarts4r::e_line(`Target`, symbol = "none", color = "red", lineStyle = list(type = "dashed"))
+      
+    }
 
 
   } else if(package == "plotly"){
@@ -587,6 +659,20 @@ spc_chart <- function(.data,
         "resetViewMapbox"
       ),
       displayLogo = F)
+    
+    if(utils::tail(!is.na(pre_plot$Target),1)){
+      
+      spc <- spc %>%
+        plotly::add_trace(
+          x = ~ time_field,
+          y = ~ Target,
+          type = "scatter",
+          line = list(color = "red", dash = 'dash'),
+          name = "Target",
+          mode = 'lines'
+        )
+      
+    }
 
 
   } else {

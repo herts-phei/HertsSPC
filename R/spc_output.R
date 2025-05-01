@@ -26,6 +26,7 @@ utils::globalVariables(c(".","Target", "value", "time_field", "indicator",
 #' @param indicator The column in data reflecting the group by column, as a character string. If no grouping column exists, set as NULL.
 #' @param time_field The column in data reflecting the time component, as a character string
 #' @param value The column in data reflecting the value component to be measured, as a character string
+#' @param baseline_point_number Defaults to NULL Set to a number if you want your SPC to be calculated using only the first n points of your data (and each distinct rebased period). This sets the baseline to n points across each rebased group. Conflicts with base_date_range, however can be used in conjunction with rebase_dates or rebase_data_frame
 #' @param base_date_range A base date range, structure like c("2021-02-01", "2021-09-01") i.e. c(start, end)
 #' @param rebase_dates Manually decided rebasing of dates. Structured like c("2021-09-01", "2022-06-01").
 #' @param rebase_data_frame Defaults to NULL. Assign dataframe of interest if you have a dataframe of rebase dates by indicator. Dataframe will join by indicator, meaning unique rebase dates can be applied on mass to multiple indicators during processing. If indicator does not exist in rebasing df, then no rebasing will occur to particular indicator.
@@ -48,57 +49,77 @@ utils::globalVariables(c(".","Target", "value", "time_field", "indicator",
 #'
 #' library(dplyr)
 #'
-#' tooth_data <- force(ToothGrowth) %>%
-#'   filter(supp == "VC") %>% slice(-15:-27) %>%
-#'   mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
-#'   polarity = "up",
-#'   greater_than_hundred = FALSE,
-#'   less_than_zero = FALSE,
-#'   unit = "count")
+#' start_date <- as.Date("2025-01-01")
+#' end_date <- as.Date("2025-01-20")
+#' date_sequence <- seq.Date(from = start_date, to = end_date, by = "day")
+#' 
+#' 
+#' indicator_data_1 <- 
+#'   data.frame(Date = date_sequence,
+#'              kpi = "Indicator 1",
+#'              indicator_value = c(45,48,44,43,45,
+#'                                  65,45,46,46,44,
+#'                                  43,42,41,40,39,
+#'                                  46,47,56,52,50),
+#'              target = 60)
 #'
 #'
 #' #Retreive SPC data
-#
+#'
 #' spc_output(
-#'        data = tooth_data,
+#'        data = indicator_data_1,
 #'        time_field = "Date",
-#'        indicator = "supp",
-#'       value = "len",
+#'        indicator = "kpi",
+#'        value = "indicator_value",
 #'        output = "data")
 #'
 #'# Retrieve static SPC plot
 #'
+#' indicator_data_3 <- 
+#'      data.frame(
+#'         Date = seq.Date(from = start_date, 
+#'                         to = as.Date("2025-01-30"), 
+#'                         by = "day"),
+#'         kpi = "Indicator 3",
+#'         indicator_value = c(45,48,44,43,45,
+#'                             45,45,47,46,44,
+#'                                  43,44,43,28,44,
+#'                                  85,88,88,83,85,
+#'                                  85,85,87,86,88,
+#'                                  83,88,83,88,88),
+#'              target = 45)
+#'
 #'spc_output(
-#'data = tooth_data,
-#'        rebase_dates = "2021-01-09", #With a rebase date,
+#'data = indicator_data_3,
+#'rebase_dates = "2021-01-15", #With a rebase date,
 #'time_field = "Date",
-#'indicator = "supp",
-#'value = "len",
+#'indicator = "kpi",
+#'value = "indicator_value",
 #'output = "chart",
 #'package = "ggplot") %>%
 #'spc_add_icons() # with icons
 #'
 #'
-#' spc_output(
-#' data = tooth_data,
-#' rebase_dates = c("2021-01-04", "2021-01-10"),
+#'spc_output(
+#' data = indicator_data_3,
+#' rebase_dates = c("2021-01-10", "2021-01-20"),
 #' time_field = "Date",
-#' indicator = "supp",
-#' value = "len",
+#'indicator = "kpi",
+#'value = "indicator_value",
 #' output = "chart",
 #' package = "ggplot",
 #' target = 30)
 #'
 #'
 #' spc_output(
-#'        data = tooth_data,
+#'        data = indicator_data_1,
 #'        time_field = "Date",
-#'        indicator = "supp",
-#'        value = "len",
+#'        indicator = "kpi",
+#'        value = "indicator_value",
 #'        output = "chart",
 #'        package = "ggplot",
 #'        target = 30,
-#'        plot_title = "Size of teeth (or something along those lines) SPC",
+#'        plot_title = "Performance over time",
 #'        time_unit = "day",
 #'        chart_theme = spc_chart_options(x_label = "Day",
 #'                                        y_label = "Count",
@@ -110,20 +131,20 @@ utils::globalVariables(c(".","Target", "value", "time_field", "indicator",
 #'# Retrieve SPC in plotly
 #'
 #'spc_output(
-#'        data = tooth_data,
+#'        data = indicator_data_1,
 #'        time_field = "Date",
-#'        indicator = "supp",
-#'        value = "len",
+#'        indicator = "kpi",
+#'        value = "indicator_value",
 #'        output = "chart",
 #'        package = "plotly")
 #'
 #'# Retrieve SPC in echarts
 #'
 #'spc_output(
-#'        data = tooth_data,
+#'        data = indicator_data_1,
 #'        time_field = "Date",
-#'        indicator = "supp",
-#'        value = "len",
+#'        indicator = "kpi",
+#'        value = "indicator_value",
 #'        output = "chart",
 #'        package = "echarts") %>%
 #'        spc_add_icons()
@@ -132,17 +153,17 @@ utils::globalVariables(c(".","Target", "value", "time_field", "indicator",
 #'# Retrieve a narrative
 #'
 #'spc_output(
-#'        data = tooth_data,
+#'        data = indicator_data_1,
 #'        time_field = "Date",
-#'        indicator = "supp",
-#'        value = "len",
+#'        indicator = "kpi",
+#'        value = "indicator_value",
 #'        output = "narrative")
 #'
 #'spc_output(
-#'        data = tooth_data,
+#'        data = indicator_data_1,
 #'        time_field = "Date",
-#'        indicator = "supp",
-#'        value = "len",
+#'        indicator = "kpi",
+#'        value = "indicator_value",
 #'        output = "narrative",
 #'        mode = "interactive")
 #'
@@ -150,18 +171,18 @@ utils::globalVariables(c(".","Target", "value", "time_field", "indicator",
 #'# Retrieve summary table
 #'
 #' spc_output(
-#'        data = tooth_data,
+#'        data = indicator_data_1,
 #'        time_field = "Date",
-#'        indicator = "supp",
-#'        value = "len",
+#'        indicator = "kpi",
+#'        value = "indicator_value",
 #'        output = "summary",
 #'        mode = "static")
 #'
 #'spc_output(
-#'        data = tooth_data,
+#'        data = dplyr::bind_rows(indicator_data_1,  indicator_data_3),
 #'        time_field = "Date",
-#'        indicator = "supp",
-#'        value = "len",
+#'        indicator = "kpi",
+#'        value = "indicator_value",
 #'        output = "summary",
 #'        mode = "interactive",
 #'        nad = FALSE)
@@ -176,6 +197,7 @@ spc_output <- function(data,
                        time_field,
                        value,
                        exclude_outliers = FALSE,
+                       baseline_point_number = NULL,
                        base_date_range = NULL,
                        rebase_dates = NULL,
                        rebase_data_frame = NULL,
@@ -195,35 +217,62 @@ spc_output <- function(data,
 ){
 
 
+  # Error message to ensure an approriate output type is called upon (case sensitive)
+  
   if(!(output %in% c("data", "chart", "narrative", "summary", "status"))){
     stop("Output not correctly specified. Needs to be 'data', 'chart', 'narrative', 'status' or 'summary'!")
   }
 
+  
+  # If no indicator column provided it will warn the user. Instead of stopping, it will assume that
+  # only one indicator's worth of data (i.e. one group) is provided and the SPC will process as such
+  
   if(is.null(indicator)){
 
     warning("No indicator column provided. Column will be generated assuming there is only one group of data. If not, specifiy an indicator column.")
   }
 
+  # If the output is "chart",  but no chart package is provided, it will default to ggplot
+  # Similarly, if there's a spelling error or a package type is not available, it will default to ggplot
+  
   if(output == "chart"){
 
     if(is.null(package)){
+      
       warning("You have requested a chart but you have not specified a package. Defaults to a static ggplot. Set package as either 'ggplot' for static or 'plotly' or 'echarts'/'echarts4r' for an interactive chart!")
-      package = "ggplot"
+      
+      package <- "ggplot"
+      
     } else if(!(package %in% c("ggplot", "plotly", "echarts", "echarts4r"))){
+      
       warning("Assigned package is not within options available. Please specify 'ggplot', 'plotly' or 'echarts'/'echarts4r. Package will default to ggplot.")
-      package = "ggplot"
+      
+      package <- "ggplot"
+      
     }
 
   }
 
+  
   if(output %in% c("summary", "narrative")){
     warning(paste0("Table output will be ", mode, ". Set mode to static or interactive to change."))
   }
 
+  
   if(exclude_outliers == FALSE){
     warning("Outliers will be included in process limit calculations!")
   }
 
+  # Target can be provided as either a raw number (e.g 80) or in reference to 
+  # a column in the data (e.g. "target_column")
+  
+  # If the target is a number, it will create a column with the target
+  # This assumes one group, if you have multiple indicators user will need to
+  # provide a target column within the original dataframe
+  
+  # If target is a column name, it will assign the column to a new one called "Target"
+  # It will error if the target column provided is not numeric
+  
   if(is.numeric(target)){
     data$Target = target
   } else if(is.null(target)){
@@ -237,6 +286,9 @@ spc_output <- function(data,
   }
   
 
+  # If a summary table is desired but the provided sorting method (if any) is not 
+  # in the below options, it will error
+  
   if(output == "summary" & !sort_by %in% c("indicator",
                                            "assurance concern", "assurance improve", 
                                            "variation concern",  "variation improve", 
@@ -248,6 +300,10 @@ spc_output <- function(data,
   }
   
 
+  # If greater_than_hundred and less_than_zero doesn't exist in the provided dataframe,
+  # both will be created below (and assigned to F)
+  # This is based on the assumption the SPC is for a proportional % indicator
+  
   if(!("greater_than_hundred" %in% colnames(data))){
     data$greater_than_hundred <- F
     warning("No greater_than_hundred column detected so it has been set as F for all indicators!")
@@ -267,6 +323,8 @@ spc_output <- function(data,
 
   # Error catching ----------------------------------------------------------
 
+  # Some error captures 
+  # If any NA's, user will be encouraged to be removed
 
   if(any(is.na(data[[value]]))){ # 
     stop("Value column has NA's values so SPC will break. Look at data. If you are aware of NA's that are due to no denominator for a given month or an unknown count,
@@ -280,37 +338,56 @@ spc_output <- function(data,
   if(!is.null(rebase_dates) & !is.vector(rebase_dates)){
     stop("Rebase dates specified are not in vector form. For example, c('2022-09-01') or c('2021-09-01', '2022-09-01')!")
   }
-
-
-if(is.null(indicator)){
-
-    data <- data %>%
-      dplyr::mutate(indicator = "Indicator 1")
-
-  } else {
-
-    data <- data %>%
-      dplyr::mutate(indicator = !!dplyr::ensym(indicator))
-
+  
+  if(!is.null(base_date_range) & !is.null(baseline_point_number)) {
+    stop("You have provided a base date range and set baseline_point_number as a number. Either set base_date_range to NULL or set baseline_point_number to NULL")
   }
   
-if(is.null(value)){
-  stop("`value` arguement is empty. Assign column of values into order for SPC to run.")
-}
+  if(is.character(baseline_point_number)){
+    stop("Ensure baseline_point_number is numeric")
+  }
+  
+  # If no indicator column is provided, it will be assigned Indicator 1
+  # If provided, indicator column is created
+  
+  if(is.null(indicator)) {
+    data <- data %>%
+      dplyr::mutate(indicator = "Indicator 1")
+    
+  } else {
+    data <- data %>%
+      dplyr::mutate(indicator = !!dplyr::ensym(indicator))
+    
+  }
+  
+  
+  # If no value column is provided, it will error
+  
+  if(is.null(value)) {
+    stop("`value` arguement is empty. Assign column of values into order for SPC to run.")
+  }
 
 
 
   # Processing  -------------------------------------------------------------
 
+  # Ensures the time field and value field are present
+  # Selects all important columns (including Numerator and Denominator if they are present)
+  
   data <- data %>%
     dplyr::mutate(time_field = !!dplyr::ensym(time_field),
                   value = !!dplyr::ensym(value)) %>%
     dplyr::select(time_field, indicator, dplyr::contains("Numerator"), dplyr::contains("Denominator"), value, Target, polarity, unit, greater_than_hundred, less_than_zero)
 
+  # Checks the time and value fields are date and numeric in nature
+  
   if(!inherits(data$time_field, c('Date','POSIXct','POSIXt'))) stop("Specified time_field is not of date class!")
   if(!inherits(data$value, c('numeric','integer'))) stop("Specified value_field is not of numeric class!")
 
 
+  # The group_average argument compares each KPI to the average values of them all
+  # Not used too often (if at all)
+  
   if(group_average == T){
 
     group <- data %>%
@@ -346,16 +423,24 @@ if(is.null(value)){
 
   } else {
 
-
-
+    # The usual method of processing
 
     data <- data %>%
+      
+      # ensures classes are appropriate 
+      # creates a reference column for the indicator
+      
       dplyr::mutate(time_field = as.Date(time_field),
                     value = as.numeric(value),
                     indicator_ref = indicator) %>%
+      
+      # Groups by the indicator as the SPC process will be applied to each distinct KPI
+      # spc_processing found in the spc_processing.R script
+      
       dplyr::group_by(indicator) %>%
       dplyr::group_modify(~ spc_processing(.x,
                                            group_average = FALSE,
+                                           baseline_point_number = baseline_point_number,
                                            base_date_range = base_date_range,
                                            rebase_dates = rebase_dates,
                                            rebase_data_frame = rebase_data_frame,
@@ -365,19 +450,34 @@ if(is.null(value)){
 
   }
 
+  
+  # Returns based on output argument 
+  # It uses the data created above, this data is then fed into other outputting functions
+  # depending on what is called for
+  
   if(output == "data"){
 
+    # Returns the SPC data - this will typically be fed into a spc_chart() filtered 
+    # for a single indicator. Or, into a spc_chart whilst looping through the unique indicators
+    
     spc <- data
 
   } else if(output == "narrative"){
 
+    
+    # See spc_narrative.R for processing
+    
     spc <- spc_narrative(.data = data,
                          .mode = mode,
                          .time_unit = time_unit)
+    
 
   } else if(output == "summary") {
 
-
+    
+    # See spc_summary_table.R for processing
+    # This is a 'scorecard', so multiple KPI/Indicators can be fed into this function
+    
     spc <- spc_summary_table(.data = data,
                              .mode = mode,
                              .value = value,
@@ -387,9 +487,12 @@ if(is.null(value)){
                              .time_unit = time_unit,
                              .sort_by = sort_by,
                              .summary_output = summary_output)
+    
 
   } else if(output == "chart"){
 
+    # See spc_chart.R for process
+    # Only one indicator at a time can be passed through to this function
     
     spc <- spc_chart(.data = data,
                      .base_date_range = base_date_range,

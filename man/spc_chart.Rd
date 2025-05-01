@@ -28,7 +28,7 @@ spc_chart(
 
 \item{.line_breaks}{Determines whether mean and process limit lines break after a rebase. Defaults to F description}
 
-\item{.chart_theme}{Takes a list of arguements that would appear in theme arguement of}
+\item{.chart_theme}{Takes a list of arguments that would appear in theme argument of}
 
 \item{.time_unit}{If time unit is set to "day", "week" or "month", reflecting daily, weekly, monthly date periods. if set to "quarter", x-axis becomes factor and converts the axis to quarterly labels.}
 }
@@ -45,50 +45,63 @@ append \%>\% spc_add_icons to end of chart object to add icons.
 
 library(dplyr)
 
-tooth_data <- force(ToothGrowth) \%>\%
-  filter(supp == "VC") \%>\% slice(-15:-27) \%>\%
-  mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
-         supp = "Indicator 1",
-         polarity = "up",
-         greater_than_hundred = FALSE,
-         less_than_zero = FALSE,
-         unit = "count")
-
-tooth_data2 <- force(ToothGrowth) \%>\%
-  filter(supp == "VC") \%>\% slice(-15:-27) \%>\%
-  mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
-         supp = "Indicator 2",
-         polarity = "up",
-         greater_than_hundred = FALSE,
-         less_than_zero = FALSE,
-         unit = "count") \%>\%
-  bind_rows(tooth_data)
+start_date <- as.Date("2025-01-01")
+end_date <- as.Date("2025-01-20")
+date_sequence <- seq.Date(from = start_date, to = end_date, by = "day")
 
 
-# Retreive SPC data
+indicator_data_1 <- 
+  data.frame(Date = date_sequence,
+             kpi = "Indicator 1",
+             indicator_value = c(45,48,44,43,45,
+                                 65,45,46,46,44,
+                                 43,42,41,40,39,
+                                 46,47,56,52,50),
+             target = 60)
 
-spc_data <- spc_output(
-       data = tooth_data2,
-       time_field = "Date",
-       indicator = "supp",
-       value = "len",
-       output = "data")
+indicator_data_2 <- 
+  data.frame(Date = date_sequence,
+             kpi = "Indicator 2",
+             indicator_value = c(45,48,44,43,45,
+                                 45,45,47,46,44,
+                                 43,44,43,28,44,
+                                 45,47,45,43,46),
+             target = 45)
+
+
+all_indicator_data <- bind_rows(indicator_data_1, indicator_data_2) \%>\% 
+  dplyr::mutate(polarity = "up",
+                greater_than_hundred = FALSE,
+                less_than_zero = FALSE,
+                unit = "count")
+
+spc_data <- HertsSPC::spc_output(
+  data = all_indicator_data,
+  time_field = "Date",
+  indicator = "kpi",
+  value = "indicator_value",
+  output = "data",
+  target = "target"
+)
+
+
 
 spc_chart(.data = filter(spc_data, indicator == "Indicator 1"),
           .package = "ggplot",
-          .plot_title = "ABCD",
-          .base_date_range = NULL)
+          .plot_title = "SPC for Indicator 1 (ggplot2)",
+          .base_date_range = NULL,
+          .chart_theme = spc_chart_options(x_title_size = 20,
+                                  x_label = "Date",
+                                  y_label = "Measure",
+                                  x_label_format = "\%d \%b",
+                                  x_breaks = "1 day"))
+          
 
 spc_chart(.data = filter(spc_data, indicator == "Indicator 2"),
-          .plot_title = "VC Plotly (equal axis)",
+          .plot_title = "SPC for Indicator 2 (Plotly)",
           .base_date_range = NULL,
           .package = "plotly",
-          .yrange = c(min(c(spc_data$value, spc_data$Target,
-                            spc_data$upper_ci, spc_data$lower_ci),
-                            na.rm = TRUE),
-                      max(c(spc_data$value, spc_data$Target,
-                            spc_data$upper_ci, spc_data$lower_ci),
-                            na.rm = TRUE)))
+          .yrange = c(0, 100))
 
 
 

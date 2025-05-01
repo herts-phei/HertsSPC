@@ -26,35 +26,79 @@ utils::globalVariables(c(".","time_field", "indicator", "value", "Mean", "upper_
 #' @examples
 #'
 #' library(dplyr)
+#' 
+#' start_date <- as.Date("2025-01-01")
+#' end_date <- as.Date("2025-01-20")
+#' date_sequence <- seq.Date(from = start_date, to = end_date, by = "day")
+#' 
+#' 
+#' indicator_data_1 <- 
+#'   data.frame(Date = date_sequence,
+#'              kpi = "Indicator 1",
+#'              Numerator = c(45,48,44,43,45,
+#'                                  65,45,46,46,44,
+#'                                  43,42,41,40,39,
+#'                                  46,47,56,52,50),
+#'              Denominator = c(95,99,94,101,96,
+#'                                  95,96,94,97,100,
+#'                                  88,95,93,96,92,
+#'                                  95,95,96,97,96),                   
+#'              target = 60,
+#'              unit = "percent",
+#'              polarity = "up",
+#'              greater_than_hundred = FALSE,
+#'              less_than_zero = FALSE) %>% 
+#'  dplyr::mutate( indicator_value = round((Numerator/Denominator)*100, 2))
+#' 
+#' 
+#' indicator_data_2 <- 
+#'   data.frame(Date = date_sequence,
+#'              kpi = "Indicator 2",
+#'              indicator_value = c(45,48,44,43,45,
+#'                                  45,45,47,46,44,
+#'                                  43,44,43,28,44,
+#'                                  45,47,45,43,46),
+#'              target = 45,
+#'              greater_than_hundred = TRUE,
+#'              unit = "count",
+#'              polarity = "up",
+#'              less_than_zero = FALSE)
+#' 
+#' 
+#' all_indicator_data <- bind_rows(indicator_data_1, indicator_data_2)
+#' 
+#' spc_data <- HertsSPC::spc_output(
+#'   data = all_indicator_data,
+#'   time_field = "Date",
+#'   indicator = "kpi",
+#'   value = "indicator_value",
+#'   output = "data",
+#'   target = "target"
+#' )
 #'
-#'tooth_data <- force(ToothGrowth) %>%
-#'   filter(supp == "VC") %>% slice(-15:-27) %>%
-#'   mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
-#'          supp = "Indicator 1",
-#'          polarity = "up",
-#'          greater_than_hundred = FALSE,
-#'          less_than_zero = FALSE,
-#'          unit = "count")
 #'
-#'
-#' spc_data <- spc_output(data = tooth_data,
-#'                        time_field = "Date",
-#'                        indicator = "supp",
-#'                        value = "len",
-#'                        output = "data")
+#' spc_data <- spc_output(data = all_indicator_data,
+#'                        time_field = "Date", 
+#'                         indicator = "kpi",
+#'                         value = "indicator_value",
+#'                         output = "data",
+#'                         target = "target"
+#'                         )
 #'
 #' spc_summary_table(.data = spc_data,
 #'                   .mode = "static",
 #'                   .time_field = "Day",
-#'                   .indicator = "Tooth Type",
-#'                   .value = "Size",
-#'                   .nad = FALSE)
+#'                   .time_unit = "day",
+#'                   .indicator = "Metric",
+#'                   .value = "Value",
+#'                   .nad = TRUE)
 #'
 #' spc_summary_table(.data = spc_data,
 #'                   .mode = "interactive",
 #'                   .time_field = "Day",
-#'                   .indicator = "Tooth Type",
-#'                   .value = "Size",
+#'                   .time_unit = "day",
+#'                   .indicator = "Metric",
+#'                   .value = "Value",
 #'                   .nad = FALSE)
 #'
 #' @export
@@ -76,6 +120,8 @@ spc_summary_table <- function(.data,
 ){
 
 
+  # Set to make sure time unit is set appropriately (defaults to month)
+  
   if(!.time_unit %in% c("month", "day", "week", "quarter")){
     stop("Time unit is not set to month, day, quarter or week. Correct before continuing!")
   }
@@ -85,14 +131,25 @@ spc_summary_table <- function(.data,
   time_unit <- if(.time_unit == "month") "%b-%Y" else if(.time_unit == "day") "%d %b %Y" else if(.time_unit == "week") "%d %b %Y" else if(.time_unit == "quarter") NA
   summary_output <- .summary_output
 
+  
+  # Force error if nad (Numerator And Denominator) is set to T but a Numerator or Denominator column doesn't exist in the data
 
   if(.nad == T & ("Numerator" %in% colnames(data)  == F | "Denominator" %in% colnames(data)== F)){
     stop(".nad is set to true however Numerator and/or Denominator columns to not exist in the original data input. Set .nad to FALSE.")
   }
 
 
+  
   spc_table <- data %>%
+    
+    # Group by indicator and test for assurance / variation for each point
+    
     dplyr::group_by(indicator) %>%
+    
+    # Two assurance columns 
+    # 1) used for sorting - on target, failing target, variable target
+    # 2) Assurance column with pathway to image determined by assurance_sort
+    
     dplyr::mutate(assurance_sort = dplyr::case_when(unique(polarity) == "up" & utils::tail(lower_ci,1) > utils::tail(Target,1) ~ "on target",
                                                     unique(polarity) == "up" & utils::tail(upper_ci, 1) < utils::tail(Target,1)  ~ "failing target",
                                                     unique(polarity) == "up" & utils::tail(upper_ci,1) >= utils::tail(Target, 1) & utils::tail(Target, 1) >= utils::tail(lower_ci, 1) ~ "variable target",
@@ -108,6 +165,10 @@ spc_summary_table <- function(.data,
                   )
     ) %>%
 
+    # Determines the variation and if any triggers have been hit
+    # 1) variation_sort - similar to assurance
+    # 2) Variation - a pathway to the appropriate icon
+    
     dplyr::mutate(indicator = as.character(as.factor(indicator)),
                   upper_ci = round(upper_ci, 2),
                   lower_ci = round(lower_ci, 2),
@@ -162,9 +223,16 @@ spc_summary_table <- function(.data,
                   Target = paste0(Target, ifelse(unit == "percent", "%", "")),
                   Mean = paste0(round(mean, 1), ifelse(unit == "percent", "%", ""))
     )  %>%
-    dplyr::group_by(indicator) %>%
+    
+    # Filters latest data point to be presented on the score card
+    
     dplyr::filter(time_field == max(time_field)) %>%
     dplyr::ungroup() %>%
+    
+    # Select the columns of interest
+    # assurance_sort and variation_sort are included for sorting purposes
+    # and are omitted from the final output
+    
     dplyr::select(indicator, time_field, value, Target,
                   Variation, Assurance, dplyr::contains("Status"),
                   dplyr::contains("Numerator"), dplyr::contains("Denominator"),
@@ -172,9 +240,14 @@ spc_summary_table <- function(.data,
                   assurance_sort, variation_sort)
 
 
+  # Sorts the above table
+  
   spc_table <- sort_spc_summary_table(data = spc_table,     # Find function in helpers.R
                                       sort_by = .sort_by)
   
+  
+  # Assigns time field format 
+  # Quarters are processed in a different way - see spc_narrative.R for commentated example
   
   if(time_unit != "quarter"){
     spc_table <- spc_table %>%
@@ -193,10 +266,14 @@ spc_summary_table <- function(.data,
   }
 
   
-
+  # The following section of ifelse's produce a table depending on arguments 
+  # passed to function
+  # The processing for static and interactive tables differ
+  
   if(mode == "interactive" & summary_output != "dataframe"){
 
-
+    # The interactive table includes a tooltip with the 
+    
     spc_table <- spc_table %>%
       dplyr::group_by(indicator) %>%
       dplyr::mutate(tooltip_variation = paste0(indicator, " - ",
@@ -217,10 +294,17 @@ spc_summary_table <- function(.data,
                                                else if(assurance_sort == "on target") "Process can be expected to consistently meet target. "
                                                else if(assurance_sort == "variable target") "Process can be expected to inconsistently meet target. "
                                                else "NO ASSURANCE "
-                    )) %>%
+                    ),
+                    value = ifelse(.nad == T & unit == "percent",
+                                   paste0(value, " (", Numerator, "/",Denominator,")"),
+                                   value)) %>%
       dplyr::ungroup() %>%
       dplyr::select(-assurance_sort, -variation_sort)
 
+    
+    # For each row in the table (each unique KPI), the variation and 
+    # assurance icons are identified on the in individuals system (these are included in the package)
+    # see spc_img_uri in helpers.R
 
     for(i in 1:nrow(spc_table)){
 
@@ -240,6 +324,8 @@ spc_summary_table <- function(.data,
 
     }
 
+    
+    # Select columns and columns names
 
     spc_table <-  spc_table %>%
       dplyr::select(indicator, time_field, value, Target,
@@ -253,6 +339,10 @@ spc_summary_table <- function(.data,
                              "tooltip_assurance")
 
 
+    # Feed processed data into a reactable
+    # see helpers.R for reference to spc_reactable_tippy(), which creates the 
+    # tooltip for the icons
+    
     spc_table <- spc_table %>%
       reactable::reactable(pagination=F,
                            bordered = T,
@@ -288,6 +378,7 @@ spc_summary_table <- function(.data,
   } else if(mode == "static"  & summary_output != "dataframe"){
 
 
+    # For the static table, there's no tooltip
 
     spc_table <- spc_table %>%
       dplyr::rowwise() %>%
@@ -302,6 +393,9 @@ spc_summary_table <- function(.data,
                                    value)
       )
 
+    
+    # For each row in the table (each unique KPI), the variation and 
+    # assurance icons are identified on the in individuals system (these are included in the package)
 
     for(i in 1:nrow(spc_table)){
 
@@ -354,6 +448,12 @@ spc_summary_table <- function(.data,
   } else if(summary_output == "dataframe"){
     
     
+    # Returns the table in df format - this may be used if further processing
+    # is needed
+    # For example, adding non-SPC indicators to a scorecard
+    # If that's the case, the code from the static / interactive chart can be copied
+    # into a normal script, or the user has freedom to design the table as they see fit
+    
     spc_table <- spc_table %>%
       dplyr::rowwise() %>%
       dplyr::mutate(Assurance = ifelse(Assurance == " " | is.na(Assurance),
@@ -386,8 +486,6 @@ spc_summary_table <- function(.data,
       
     }
     
-    
-    fontname <- "Arial"
     
     spc_table <-  spc_table %>%
       dplyr::select(indicator, time_field, value,  Target,

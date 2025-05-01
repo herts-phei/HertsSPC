@@ -20,25 +20,61 @@ The function used to output data as an SPC chart. Can be ran independently from 
 
 library(dplyr)
 
-tooth_data <- force(ToothGrowth) \%>\%
-  filter(supp == "VC") \%>\% slice(-15:-27) \%>\%
-  mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
-         supp = "Indicator 1",
-         polarity = "up",
-         greater_than_hundred = FALSE,
-         less_than_zero = FALSE,
-         unit = "count")
+start_date <- as.Date("2025-01-01")
+end_date <- as.Date("2025-01-20")
+date_sequence <- seq.Date(from = start_date, to = end_date, by = "day")
 
 
-spc_data <- spc_output(data = tooth_data,
-                       time_field = "Date",
-                       indicator = "supp",
-                       value = "len",
-                       output = "data")
+indicator_data_1 <- 
+  data.frame(Date = date_sequence,
+             kpi = "Indicator 1",
+             indicator_value = c(45,48,44,43,45,
+                                 65,45,46,46,44,
+                                 43,42,41,40,39,
+                                 46,47,56,52,50),
+             target = 60)
 
-spc_narrative(.data = spc_data,
-              .mode = "static")
+indicator_data_2 <- 
+  data.frame(Date = date_sequence,
+             kpi = "Indicator 2",
+             indicator_value = c(45,48,44,43,45,
+                                 45,45,47,46,44,
+                                 43,44,43,28,44,
+                                 45,47,45,43,60),
+             target = 45)
 
-spc_narrative(.data = spc_data,
-              .mode = "interactive")
+
+all_indicator_data <- bind_rows(indicator_data_1, indicator_data_2) \%>\% 
+  dplyr::mutate(polarity = "up",
+                greater_than_hundred = FALSE,
+                less_than_zero = FALSE,
+                unit = "count")
+                
+spc_data <- HertsSPC::spc_output(
+  data = all_indicator_data,
+  time_field = "Date",
+  indicator = "kpi",
+  value = "indicator_value",
+  output = "data",
+  target = "target"
+)              
+
+spc_narrative(.data = filter(spc_data, indicator == "Indicator 1"),
+              .mode = "static",
+              .time_unit = "day")
+
+spc_narrative(.data = filter(spc_data, indicator == "Indicator 2"),
+              .mode = "interactive",
+              .time_unit = "day")
+              
+HertsSPC::spc_output(
+  data = filter(all_indicator_data, kpi == "Indicator 1"),
+  time_field = "Date",
+  indicator = "kpi",
+  value = "indicator_value",
+  output = "narrative",
+  mode = "interactive",
+  target = "target"
+)                     
+              
 }

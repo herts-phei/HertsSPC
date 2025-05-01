@@ -42,25 +42,30 @@ Chart options for ggplot. Pipe spc_add_icons() onto end of function to apply ico
 
 library(dplyr)
 
-tooth_data <- force(ToothGrowth) \%>\%
-  filter(supp == "VC") \%>\% slice(-15:-27) \%>\%
-  mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
-         supp = "Indicator 1",
-         polarity = "up",
-         greater_than_hundred = FALSE,
-         less_than_zero = FALSE,
-         unit = "count")
+start_date <- as.Date("2025-01-01")
+end_date <- as.Date("2025-01-20")
+date_sequence <- seq.Date(from = start_date, to = end_date, by = "day")
+
+indicator_data <-
+  data.frame(Date = date_sequence,
+             kpi = "Indicator 1",
+             indicator_value = c(45,48,44,43,45,
+                                 65,45,46,46,44,
+                                 43,42,41,40,39,
+                                 46,47,56,52,50),
+             target = 60)
 
 spc_output(
-       data = tooth_data,
-       time_field = "Date",
-       indicator = "supp",
-       value = "len",
-       output = "chart",
-       package = "ggplot",
-       chart_theme = spc_chart_options(x_title_size = 20,
-                                        x_label = "Date",
-                                        y_label = "Measure",
-                                        x_label_format = "\%d \%b"))
+  data = indicator_data,
+  time_field = "Date",
+  indicator = "kpi",
+  value = "indicator_value",
+  output = "chart",
+  package = "ggplot",
+  chart_theme = spc_chart_options(x_title_size = 20,
+                                  x_label = "Date",
+                                  y_label = "Measure",
+                                  x_label_format = "\%d \%b",
+                                  x_breaks = "1 day"))
 
 }

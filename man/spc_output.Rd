@@ -10,6 +10,7 @@ spc_output(
   time_field,
   value,
   exclude_outliers = FALSE,
+  baseline_point_number = NULL,
   base_date_range = NULL,
   rebase_dates = NULL,
   rebase_data_frame = NULL,
@@ -39,6 +40,8 @@ spc_output(
 
 \item{exclude_outliers}{Set to T if outliers are desired to be excluded from process calculations
 Reflects periods of rebasing. Can be rebased multiple times. Processing function will fill dates of rebasing downwards. E.g. above example, there will be three groups, start:2021-09-01, 2021-10-01:2022-06-01, 2022-07-01:end}
+
+\item{baseline_point_number}{Defaults to NULL Set to a number if you want your SPC to be calculated using only the first n points of your data (and each distinct rebased period). This sets the baseline to n points across each rebased group. Conflicts with base_date_range, however can be used in conjunction with rebase_dates or rebase_data_frame}
 
 \item{base_date_range}{A base date range, structure like c("2021-02-01", "2021-09-01") i.e. c(start, end)}
 
@@ -93,56 +96,77 @@ Having columns for these indicators allows producing SPC charts/tables on mass w
 
 library(dplyr)
 
-tooth_data <- force(ToothGrowth) \%>\%
-  filter(supp == "VC") \%>\% slice(-15:-27) \%>\%
-  mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
-  polarity = "up",
-  greater_than_hundred = FALSE,
-  less_than_zero = FALSE,
-  unit = "count")
+start_date <- as.Date("2025-01-01")
+end_date <- as.Date("2025-01-20")
+date_sequence <- seq.Date(from = start_date, to = end_date, by = "day")
+
+
+indicator_data_1 <- 
+  data.frame(Date = date_sequence,
+             kpi = "Indicator 1",
+             indicator_value = c(45,48,44,43,45,
+                                 65,45,46,46,44,
+                                 43,42,41,40,39,
+                                 46,47,56,52,50),
+             target = 60)
 
 
 #Retreive SPC data
+
 spc_output(
-       data = tooth_data,
+       data = indicator_data_1,
        time_field = "Date",
-       indicator = "supp",
-      value = "len",
+       indicator = "kpi",
+       value = "indicator_value",
        output = "data")
 
 # Retrieve static SPC plot
 
+indicator_data_3 <- 
+     data.frame(
+        Date = seq.Date(from = start_date, 
+                        to = as.Date("2025-01-30"), 
+                        by = "day"),
+        kpi = "Indicator 3",
+        indicator_value = c(45,48,44,43,45,
+                            45,45,47,46,44,
+                                 43,44,43,28,44,
+                                 85,88,88,83,85,
+                                 85,85,87,86,88,
+                                 83,88,83,88,88),
+             target = 45)
+
 spc_output(
-data = tooth_data,
-       rebase_dates = "2021-01-09", #With a rebase date,
+data = indicator_data_3,
+rebase_dates = "2021-01-15", #With a rebase date,
 time_field = "Date",
-indicator = "supp",
-value = "len",
+indicator = "kpi",
+value = "indicator_value",
 output = "chart",
 package = "ggplot") \%>\%
 spc_add_icons() # with icons
 
 
 spc_output(
-data = tooth_data,
-rebase_dates = c("2021-01-04", "2021-01-10"),
+data = indicator_data_3,
+rebase_dates = c("2021-01-10", "2021-01-20"),
 time_field = "Date",
-indicator = "supp",
-value = "len",
+indicator = "kpi",
+value = "indicator_value",
 output = "chart",
 package = "ggplot",
 target = 30)
 
 
 spc_output(
-       data = tooth_data,
+       data = indicator_data_1,
        time_field = "Date",
-       indicator = "supp",
-       value = "len",
+       indicator = "kpi",
+       value = "indicator_value",
        output = "chart",
        package = "ggplot",
        target = 30,
-       plot_title = "Size of teeth (or something along those lines) SPC",
+       plot_title = "Performance over time",
        time_unit = "day",
        chart_theme = spc_chart_options(x_label = "Day",
                                        y_label = "Count",
@@ -154,20 +178,20 @@ spc_output(
 # Retrieve SPC in plotly
 
 spc_output(
-       data = tooth_data,
+       data = indicator_data_1,
        time_field = "Date",
-       indicator = "supp",
-       value = "len",
+       indicator = "kpi",
+       value = "indicator_value",
        output = "chart",
        package = "plotly")
 
 # Retrieve SPC in echarts
 
 spc_output(
-       data = tooth_data,
+       data = indicator_data_1,
        time_field = "Date",
-       indicator = "supp",
-       value = "len",
+       indicator = "kpi",
+       value = "indicator_value",
        output = "chart",
        package = "echarts") \%>\%
        spc_add_icons()
@@ -176,17 +200,17 @@ spc_output(
 # Retrieve a narrative
 
 spc_output(
-       data = tooth_data,
+       data = indicator_data_1,
        time_field = "Date",
-       indicator = "supp",
-       value = "len",
+       indicator = "kpi",
+       value = "indicator_value",
        output = "narrative")
 
 spc_output(
-       data = tooth_data,
+       data = indicator_data_1,
        time_field = "Date",
-       indicator = "supp",
-       value = "len",
+       indicator = "kpi",
+       value = "indicator_value",
        output = "narrative",
        mode = "interactive")
 
@@ -194,18 +218,18 @@ spc_output(
 # Retrieve summary table
 
 spc_output(
-       data = tooth_data,
+       data = indicator_data_1,
        time_field = "Date",
-       indicator = "supp",
-       value = "len",
+       indicator = "kpi",
+       value = "indicator_value",
        output = "summary",
        mode = "static")
 
 spc_output(
-       data = tooth_data,
+       data = dplyr::bind_rows(indicator_data_1,  indicator_data_3),
        time_field = "Date",
-       indicator = "supp",
-       value = "len",
+       indicator = "kpi",
+       value = "indicator_value",
        output = "summary",
        mode = "interactive",
        nad = FALSE)

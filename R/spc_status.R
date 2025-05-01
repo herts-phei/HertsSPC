@@ -18,28 +18,69 @@ utils::globalVariables(c(".","time_field", "indicator", "value", "Mean", "upper_
 #' @param .value colunm reflecting value to be reported. Needed for column header
 #' @examples
 #'
-#'library(dplyr)
+#' library(dplyr)
+#' 
+#' start_date <- as.Date("2025-01-01")
+#' end_date <- as.Date("2025-01-20")
+#' date_sequence <- seq.Date(from = start_date, to = end_date, by = "day")
+#' 
+#' 
+#' indicator_data_1 <- 
+#'   data.frame(Date = date_sequence,
+#'              kpi = "Indicator 1",
+#'              indicator_value = c(45,48,44,43,45,
+#'                                  65,45,46,46,44,
+#'                                  43,42,41,40,39,
+#'                                  46,47,56,52,50),
+#'              target = 60)
+#' 
+#' indicator_data_2 <- 
+#'   data.frame(Date = date_sequence,
+#'              kpi = "Indicator 2",
+#'              indicator_value = c(45,48,44,43,45,
+#'                                  45,45,47,46,44,
+#'                                  43,44,43,28,44,
+#'                                  45,47,45,43,46),
+#'              target = 45)
+#' 
+#' 
+#' all_indicator_data <- bind_rows(indicator_data_1, indicator_data_2) %>% 
+#'   dplyr::mutate(polarity = "up",
+#'                 greater_than_hundred = FALSE,
+#'                 less_than_zero = FALSE,
+#'                 unit = "count")
+#' 
+#' spc_data <- HertsSPC::spc_output(
+#'   data = all_indicator_data,
+#'   time_field = "Date",
+#'   indicator = "kpi",
+#'   value = "indicator_value",
+#'   output = "data",
+#'   target = "target"
+#' )
 #'
-#'tooth_data <- force(ToothGrowth) %>%
-#'   filter(supp == "VC") %>% slice(-15:-27) %>%
-#'   mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
-#'          supp = "Indicator 1",
-#'          polarity = "up",
-#'          greater_than_hundred = FALSE,
-#'          less_than_zero = FALSE,
-#'          unit = "count")
 #'
-#'
-#' spc_data <- spc_output(data = tooth_data,
-#'                        time_field = "Date",
-#'                        indicator = "supp",
-#'                        value = "len",
-#'                        output = "data")
+#' spc_data <- spc_output(data = all_indicator_data,
+#'                        time_field = "Date", 
+#'                         indicator = "kpi",
+#'                         value = "indicator_value",
+#'                         output = "data",
+#'                         target = "target"
+#'                         )
 #'
 #' spc_status(.data = spc_data,
-#'                   .indicator = "Tooth Type",
-#'                   .value = "Size",
+#'                   .indicator = "KPI",
+#'                   .value = "Quantity",
 #'                   .time_field = "Day")
+#'
+#' spc_output(data = all_indicator_data,
+#'                        time_field = "Date",
+#'                         indicator = "kpi",
+#'                         value = "indicator_value",
+#'                         output = "status",
+#'                         target = "target"
+#'                         )
+#'
 #'
 #' @export
 #' @importFrom rlang .data
@@ -112,11 +153,11 @@ spc_status <- function(.data,
 
 
 
-#' SPC assruance functionality.
+#' SPC assurance functionality.
 #'
 #' @description Return the state of assurance for a selected metric that has been processed into an SPC dataframe.
-#' @param data Dataframe with SPC processed metric.
-#' @param metric The metric in the indicator column you want to return assurance for
+#' @param .data Dataframe with SPC processed metric.
+#' @param .metric The metric in the indicator column you want to return assurance for
 #' @examples
 #'
 #' #NOT TO BE CALLED INDEPENDENTLY
@@ -128,13 +169,13 @@ spc_status <- function(.data,
 
 
 
-spc_assurance <- function(data,
-                          metric){
+spc_assurance <- function(.data,
+                          .metric){
 
 
 
-  data_filtered <- data %>%
-    dplyr::filter(indicator == metric)
+  data_filtered <- .data %>%
+    dplyr::filter(indicator == .metric)
 
   values <- utils::tail(data_filtered$value[!is.na(data_filtered$value)], 6)
 

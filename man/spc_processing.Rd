@@ -13,6 +13,7 @@ spc_processing(
   rebase_data_frame = NULL,
   group_average = F,
   exclude_outliers = F,
+  baseline_point_number = NULL,
   target = NULL
 )
 }
@@ -32,6 +33,8 @@ spc_processing(
 \item{group_average}{Compare a metric value against the process of the average of a group of metrics. Defaults to F. Provided in spc_output().}
 
 \item{exclude_outliers}{Set to T if outliers are desired to be excluded from process calculations. Provided in spc_output().}
+
+\item{baseline_point_number}{baseline_point_number entered into spc_output()}
 
 \item{target}{The column reflecting the target column}
 }

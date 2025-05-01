@@ -18,7 +18,11 @@ spc_icons <- function(.data,
                       .polarity){
 
 
-
+  # This function returns the assurance and variation icons of a KPI
+  # This function is used within the spc_chart() funciton, and only works on
+  # one KPI at a time
+  # Cannot be used idependently 
+  
   data <- .data
   polarity <- .polarity
 
@@ -139,7 +143,7 @@ spc_icons <- function(.data,
 #' @param plotly_variation c(x,y,sizex,sizey)
 #' @param plotly_assurance c(x,y,sizex,sizey)
 #' @examples
-#' # NOT TO BE CALLED INDEPENDENTLY
+#' # See read.me and ?spc_chart()
 #' @export
 #'
 #' @importFrom magrittr %>%
@@ -151,9 +155,15 @@ spc_add_icons <- function(.spc,
                           echarts_assurance = c(200, 0, -999, 50, 50),
                           ggplot_variation = c(0.32, 0.4, 0.1),
                           ggplot_assurance = c(0.4, 0.4, 0.1),
-                          plotly_variation = c(0.8, 0.95, 0.1, 0.1),
+                          plotly_variation = c(0.72, 0.95, 0.1, 0.1),
                           plotly_assurance = c(0.8, 0.95, 0.1, 0.1)){
 
+  
+  # This function is piped onto the end of a chart output to put the icons 
+  # onto the chart
+  # The information is stored behind the graph and acessed in different ways depending on the graph type
+  
+  
   graph_type <- class(.spc)
 
   if (inherits(.spc, c('echarts4r', 'echarts'))) {
@@ -180,6 +190,7 @@ spc_add_icons <- function(.spc,
   }
 
 
+  # Depending on the assurance and the variation, the appropriate png is selected
 
   if(is.na(icon_assurance)){
 
@@ -226,8 +237,8 @@ spc_add_icons <- function(.spc,
   }
 
   
- # browser()
-
+  # The png's are then added to the plot, with the positions determined
+  # by the coords provided in the appropriate function argument
 
   if(any(graph_type %in% "plotly")){
 
@@ -299,12 +310,18 @@ spc_add_icons <- function(.spc,
 
     spc <- cowplot::ggdraw() +
       cowplot::draw_plot(.spc) +
-      cowplot::draw_image(magick::image_read(system.file(paste0("icons/", icon_variation), package = "HertsSPC")),  x = ggplot_variation[1], y = ggplot_variation[2], scale = ggplot_variation[3])
+      cowplot::draw_image(magick::image_read(system.file(paste0("icons/", icon_variation), package = "HertsSPC")), 
+                          x = ggplot_variation[1],
+                          y = ggplot_variation[2], 
+                          scale = ggplot_variation[3])
 
 
     if(!grepl("white_space.png", icon_assurance)){
       spc <- spc +
-        cowplot::draw_image(magick::image_read(system.file(paste0("icons/", icon_assurance), package = "HertsSPC")),  x = ggplot_assurance[1], y = ggplot_assurance[2], scale = ggplot_assurance[3])
+        cowplot::draw_image(magick::image_read(system.file(paste0("icons/", icon_assurance), package = "HertsSPC")),  
+                            x = ggplot_assurance[1], 
+                            y = ggplot_assurance[2], 
+                            scale = ggplot_assurance[3])
 
     } else {spc <- spc}
 

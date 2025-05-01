@@ -42,34 +42,78 @@ The function used to output data as an SPC summary table. Can be ran independent
 
 library(dplyr)
 
-tooth_data <- force(ToothGrowth) \%>\%
-  filter(supp == "VC") \%>\% slice(-15:-27) \%>\%
-  mutate(Date = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-17"), by = "days"),
-         supp = "Indicator 1",
-         polarity = "up",
-         greater_than_hundred = FALSE,
-         less_than_zero = FALSE,
-         unit = "count")
+start_date <- as.Date("2025-01-01")
+end_date <- as.Date("2025-01-20")
+date_sequence <- seq.Date(from = start_date, to = end_date, by = "day")
 
 
-spc_data <- spc_output(data = tooth_data,
-                       time_field = "Date",
-                       indicator = "supp",
-                       value = "len",
-                       output = "data")
+indicator_data_1 <- 
+  data.frame(Date = date_sequence,
+             kpi = "Indicator 1",
+             Numerator = c(45,48,44,43,45,
+                                 65,45,46,46,44,
+                                 43,42,41,40,39,
+                                 46,47,56,52,50),
+             Denominator = c(95,99,94,101,96,
+                                 95,96,94,97,100,
+                                 88,95,93,96,92,
+                                 95,95,96,97,96),                   
+             target = 60,
+             unit = "percent",
+             polarity = "up",
+             greater_than_hundred = FALSE,
+             less_than_zero = FALSE) \%>\% 
+ dplyr::mutate( indicator_value = round((Numerator/Denominator)*100, 2))
+
+
+indicator_data_2 <- 
+  data.frame(Date = date_sequence,
+             kpi = "Indicator 2",
+             indicator_value = c(45,48,44,43,45,
+                                 45,45,47,46,44,
+                                 43,44,43,28,44,
+                                 45,47,45,43,46),
+             target = 45,
+             greater_than_hundred = TRUE,
+             unit = "count",
+             polarity = "up",
+             less_than_zero = FALSE)
+
+
+all_indicator_data <- bind_rows(indicator_data_1, indicator_data_2)
+
+spc_data <- HertsSPC::spc_output(
+  data = all_indicator_data,
+  time_field = "Date",
+  indicator = "kpi",
+  value = "indicator_value",
+  output = "data",
+  target = "target"
+)
+
+
+spc_data <- spc_output(data = all_indicator_data,
+                       time_field = "Date", 
+                        indicator = "kpi",
+                        value = "indicator_value",
+                        output = "data",
+                        target = "target"
+                        )
 
 spc_summary_table(.data = spc_data,
                   .mode = "static",
                   .time_field = "Day",
-                  .indicator = "Tooth Type",
-                  .value = "Size",
-                  .nad = FALSE)
+                  .time_unit = "day",
+                  .indicator = "Metric",
+                  .value = "Value",
+                  .nad = TRUE)
 
 spc_summary_table(.data = spc_data,
                   .mode = "interactive",
                   .time_field = "Day",
-                  .indicator = "Tooth Type",
-                  .value = "Size",
+                  .time_unit = "day",
+                  .indicator = "Metric",
+                  .value = "Value",
                   .nad = FALSE)
 
 }

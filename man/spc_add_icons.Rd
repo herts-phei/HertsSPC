@@ -10,7 +10,7 @@ spc_add_icons(
   echarts_assurance = c(200, 0, -999, 50, 50),
   ggplot_variation = c(0.32, 0.4, 0.1),
   ggplot_assurance = c(0.4, 0.4, 0.1),
-  plotly_variation = c(0.8, 0.95, 0.1, 0.1),
+  plotly_variation = c(0.72, 0.95, 0.1, 0.1),
   plotly_assurance = c(0.8, 0.95, 0.1, 0.1)
 )
 }
@@ -33,5 +33,5 @@ spc_add_icons(
 Add icons after your ggplot is created and edited.
 }
 \examples{
-# NOT TO BE CALLED INDEPENDENTLY
+# See read.me and ?spc_chart()
 }
